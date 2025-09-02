@@ -5,11 +5,7 @@ export class UIScene extends Phaser.Scene {
     super("UI");
   }
   create() {
-    this.add
-      .text(400, 300, "Hello, World!", {
-        font: "32px Arial",
-        color: "#fff",
-      })
-      .setOrigin(0.5);
+    // Use the arcade bitmap font for Hello, World!
+    this.add.bitmapText(400, 300, "arcade", "Hello, World!", 32).setOrigin(0.5);
   }
 }
