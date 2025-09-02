@@ -57,3 +57,8 @@ You are an AI assistant working *inside this repository*. Follow these rules str
 
 ## 9) When You’re Unsure
 - Choose the **least risky** path, annotate rationale in code comments, and add a `// TODO(agent):` note with a suggested follow-up.
+
+## 10) Sprite Animation Rule
+- Always use the `idle-0` animation as the default sprite animation for all entities unless a different animation is explicitly required by gameplay or design.
+- Define and reference `idle-0` in asset manifests and animation configs.
+- Document any exceptions in code comments.
