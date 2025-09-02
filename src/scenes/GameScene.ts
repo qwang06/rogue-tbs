@@ -8,6 +8,22 @@ export class GameScene extends Phaser.Scene {
     const map = this.createTilemap();
     if (map) {
       this.setupCamera(map);
+      // Add archer sprite at tile (2,2)
+      const archer = this.add.sprite(
+        2 * 16 + 8,
+        2 * 16 + 8,
+        "archer",
+        "idle-1"
+      );
+      archer.setOrigin(0.5, 0.5);
+      // Add ff7-cloud sprite at tile (5,5)
+      const cloud = this.add.sprite(
+        5 * 16 + 8,
+        5 * 16 + 8,
+        "ff7-cloud",
+        "idle-1"
+      );
+      cloud.setOrigin(0.5, 0.5);
     }
     this.scene.launch("UI");
   }
@@ -16,8 +32,6 @@ export class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: "fe7-map" });
     const tileset = map.addTilesetImage("FE7-variant", "fe7-tiles");
     if (!tileset) {
-      // eslint-disable-next-line no-console
-      console.warn("Tileset FE7-variant not found!");
       return null;
     }
     map.createLayer("Ground", tileset, 0, 0);
