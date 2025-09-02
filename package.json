@@ -1,0 +1,16 @@
+{
+  "name": "rogue-tbs",
+  "version": "0.1.0",
+  "description": "Roguelike Turn-Based Strategy Game (Phaser)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "vite"
+  },
+  "dependencies": {
+    "phaser": "^3.60.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^5.0.0"
+  }
+}
