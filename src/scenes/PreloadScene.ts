@@ -5,6 +5,8 @@ export class PreloadScene extends Phaser.Scene {
     super("Preload");
   }
   preload() {
+    // Load tileset image for the map
+    this.load.image("fe7-tiles", "assets/maps/FE7-variant.png");
     // Bitmap font (arcade)
     this.load.bitmapFont(
       "arcade",
@@ -16,6 +18,9 @@ export class PreloadScene extends Phaser.Scene {
       "webfont",
       "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"
     );
+
+    // Load Tiled map (FE7-map.json)
+    this.load.tilemapTiledJSON("fe7-map", "assets/maps/FE7-map.json");
   }
   create() {
     // Load VT323 webfont using WebFont Loader

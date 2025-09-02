@@ -12,6 +12,7 @@ const config: Phaser.Types.Core.GameConfig = {
   backgroundColor: "#222",
   parent: "game-container",
   scene: [BootScene, PreloadScene, MenuScene, GameScene, UIScene],
+  pixelArt: true, // Prevents smoothing for pixel art
 };
 
 window.addEventListener("DOMContentLoaded", () => {
