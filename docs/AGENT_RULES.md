@@ -27,13 +27,13 @@ You are an AI assistant working *inside this repository*. Follow these rules str
 - `src/game/` — game-specific content (scenes, systems, entities, assets config).
 - `src/ui/` — UI overlays, HUD, menus.
 - `src/assets/` — asset manifests, loaders, keys (no binaries committed if large).
-- `tests/` — unit tests; `tests/e2e/` for Playwright/interactive tests.
+- `tests/` — unit tests for logic and components.
 - Keep each file under ~200–300 LoC where possible; split by concern.
 
 ## 4) Testing Rules
 - **Unit test** pure logic (systems, math, state machines).
 - **Contract tests** for APIs or data loaders.
-- **E2E smoke tests**: simple Playwright checks for scene boot, asset load, basic input loop.
+- **Manual testing**: verify scene boot, asset load, basic input loop in browser.
 - Every new public function/class must have at least one unit test unless trivial (getter/setter).
 
 ## 5) Performance & Memory

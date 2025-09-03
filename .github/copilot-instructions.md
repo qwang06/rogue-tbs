@@ -20,8 +20,7 @@ Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with
 
 ### Testing:
 - **Unit tests**: `npm test` -- takes ~2 seconds. Uses Vitest with Node environment.
-- **E2E tests**: `npm run test:ui` -- **REQUIRES BROWSER INSTALLATION FIRST**: run `npx playwright install chromium` (takes 10+ minutes, NEVER CANCEL)
-- E2E tests validate game loading, canvas presence, and basic keyboard input
+- Unit tests cover utility functions, components, and pure TypeScript logic
 
 ## Validation Scenarios
 
@@ -52,8 +51,6 @@ Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with
 - `npm run lint`: ~1 second (set timeout: 60+ seconds)
 - `npm run format`: ~2 seconds (set timeout: 60+ seconds)
 - `npm test`: ~2 seconds (set timeout: 60+ seconds)
-- `npm run test:ui`: Varies based on tests (set timeout: 300+ seconds)
-- `npx playwright install chromium`: 10+ minutes (set timeout: 1200+ seconds) **NEVER CANCEL**
 
 ## Repository Structure
 
@@ -65,7 +62,6 @@ Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with
   - `entities/` -- Factory functions for game objects
   - `util/` -- Utility functions
 - `tests/` -- Unit tests (Vitest)
-- `tests/e2e/` -- End-to-end tests (Playwright)
 - `dist/` -- Build output (created by `npm run build`)
 - `public/` -- Static assets served by Vite
 
@@ -74,7 +70,6 @@ Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with
 - `vite.config.js` -- Vite build configuration
 - `tsconfig.json` -- TypeScript configuration
 - `vitest.config.ts` -- Unit test configuration
-- `playwright.config.ts` -- E2E test configuration
 - `eslint.config.js` -- ESLint configuration (modern flat config)
 - `.prettierrc.json` -- Prettier formatting rules
 
@@ -89,15 +84,12 @@ Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with
 5. `npm test`
 6. `npm run build`
 7. Manually test the application in browser
-8. `npm run test:ui` (if Playwright browsers are installed)
 
 ## Known Issues and Workarounds
 
 - **ESLint warning**: "Module type not specified" warning is expected and can be ignored
 - **Vite warning**: "CJS build deprecated" warning is expected and can be ignored
 - **Build warning**: Large chunk size warning (>500KB) is expected due to Phaser bundle
-- **Playwright installation**: May fail on first attempt due to network issues - retry if needed
-- **E2E tests**: Require `npx playwright install chromium` before first run
 
 ## Architecture Notes
 

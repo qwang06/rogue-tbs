@@ -4,7 +4,7 @@
 1. `npm install`
 2. `npm run dev` (local server)
 3. `npm run typecheck && npm run lint`
-4. `npm test` (unit) and `npm run test:ui` (e2e) when applicable
+4. `npm test` (unit) when applicable
 
 All four should be green before you open/ask for a PR.
 
@@ -25,5 +25,5 @@ All four should be green before you open/ask for a PR.
 
 ## Testing Expectations
 - Unit tests for logic.
-- E2E smoke for scene boot and critical inputs.
-- Fast tests: keep unit tests <1s per file; e2e kept to smoke level.
+- Focus on testing pure TypeScript functions, utilities, and components.
+- Fast tests: keep unit tests <1s per file.
