@@ -1,108 +1,90 @@
-# rogue-tbs
+# Rogue TBS — Copilot Instructions (TypeScript + Phaser 3)
 
-**Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.**
+These guidelines are for GitHub Copilot Agent when working in this repository.  
+**Always follow these rules first; only fall back to web search or shell commands when you encounter unexpected cases.**
 
-Rogue TBS is a TypeScript/Phaser 3 roguelike turn-based strategy game built with Vite. The application runs in a web browser and shows a pixel art game world with characters that can be controlled via keyboard input.
+---
 
-## Working Effectively
+## Project Overview
+- **Stack:** TypeScript, Phaser 3, Vite, Vitest, ESLint (flat), Prettier
+- **Game:** 2D, turn-based strategy (in the vein of *Fire Emblem* / *Final Fantasy Tactics*). Roguelike structure inspired by *Vampire Survivors* (but turn-based).
+- **Principles:** Clean Code (small, focused functions), composition over inheritance, testable core logic.
 
-### Bootstrap and build the repository:
-1. `npm install` -- takes ~17 seconds. NEVER CANCEL. Set timeout to 60+ minutes.
-2. `npm run typecheck` -- takes ~2 seconds. TypeScript compilation check.
-3. `npm run lint` -- takes ~1 second. ESLint with automatic fixes.
-4. `npm run format` -- takes ~2 seconds. Prettier code formatting.
-5. `npm run build` -- takes ~7 seconds. Vite production build.
+---
 
-### Run the application:
-- **Development server**: `npm run dev` or `npm start` -- starts Vite dev server at http://localhost:5173/
-- **NEVER CANCEL development server during testing** - let it run in background
-- The application shows a working Phaser 3 game with pixel art graphics and "HELLO WORLD" text
+## Repository Tasks (Run Order)
+1. `npm install` — ensure it completes successfully.
+2. `npm run typecheck` — no TypeScript errors.
+3. `npm run lint` — autofix where possible; no remaining lint errors.
+4. `npm run format` — keep diffs clean.
+5. `npm test` — all tests pass (Vitest).
+6. `npm run build` — Vite production build succeeds.
 
-### Testing:
-- **Unit tests**: `npm test` -- takes ~2 seconds. Uses Vitest with Node environment.
-- Unit tests cover utility functions, components, and pure TypeScript logic
+> **Notes**
+> - Do not rely on fixed duration estimates or kill commands by time. Ensure completion and success instead.
+> - Prefer generous timeouts in automation; never cancel long-running tasks prematurely during setup/build.
 
-## Validation Scenarios
+---
 
-**ALWAYS manually validate any changes using these scenarios:**
+## Run/Validate Locally
+- **Dev server:** `npm run dev` (Vite at http://localhost:5173/).
+- **Manual smoke test checklist:**
+  - App loads without console errors.
+  - Pixel art scene renders and displays “HELLO WORLD”.
+  - Arrow keys / basic input are captured (no runtime exceptions).
+  - Page hot-reload works.
 
-1. **Basic application functionality**:
-   - Run `npm run dev`
-   - Navigate to http://localhost:5173/
-   - Verify the game loads and shows pixel art with "HELLO WORLD"
-   - Test arrow keys (Up, Down, Left, Right) to ensure input is captured
+---
 
-2. **Build validation**:
-   - Run `npm run build`
-   - Verify `dist/` directory is created with `index.html` and bundled JS
-   - Check that build completes without errors (warnings about chunk size are normal)
+## Code & Architecture Rules
+- **TypeScript only.** No `.js` sources. TS strict mode; no `any`.
+- **File layout (high-level):**
+  - `src/scenes/` — Phaser scenes (Boot → Preload → Menu → Game → UI).
+  - `src/components/` — plain data-only components (no Phaser imports).
+  - `src/systems/` — pure functions operating on components (unit-testable).
+  - `src/entities/` — factory functions for game objects/wrappers.
+  - `src/util/` — helpers (pure where possible).
+- **No Phaser imports** inside `components/`, `systems/`, or unit tests. Keep game logic framework-agnostic.
+- **Inter-scene communication:** use an EventBus or explicit dependency injection; avoid direct cross-scene imports.
+- **State management:** central `GameModel` (serializable) for persistent state; scenes read/update via events or injected services.
+- **Physics:** **Do not enable** Arcade/Matter unless a ticket explicitly asks for it.
+- **Config:** Use `src/config.ts` as the single source for game configuration (type, width/height, backgroundColor, scenes, etc.).
+- **Naming/style:** PascalCase for classes, camelCase for variables/functions; descriptive names; small focused functions; early returns over deep nesting.
+- **Magic strings:** Put asset keys in `src/assets/keys.ts`.
 
-3. **Code quality validation**:
-   - Run `npm run typecheck && npm run lint && npm run format`
-   - All commands must pass without errors before committing changes
+---
 
-## Command Timing and Timeouts
+## Tooling & Config
+- **Vite config:** prefer `vite.config.ts` (typed, consistent with TS).
+- **Testing:** write unit tests for `systems/` and utilities. Avoid DOM/Phaser coupling in tests.
+- **ESLint/Prettier:** keep both green locally before committing.
 
-**CRITICAL: Set appropriate timeouts and NEVER CANCEL these commands:**
+---
 
-- `npm install`: ~17 seconds (set timeout: 300+ seconds)
-- `npm run build`: ~7 seconds (set timeout: 120+ seconds)
-- `npm run typecheck`: ~2 seconds (set timeout: 60+ seconds)
-- `npm run lint`: ~1 second (set timeout: 60+ seconds)
-- `npm run format`: ~2 seconds (set timeout: 60+ seconds)
-- `npm test`: ~2 seconds (set timeout: 60+ seconds)
+## Pull Requests (required)
+- Reference the issue (e.g., `Closes #123`).
+- Include a concise summary and any architectural notes.
+- PR must pass: `typecheck`, `lint`, `format`, `test`, `build`.
+- Include a short **manual validation note** (URL loaded, text visible, input works, no console errors).
+- Keep PRs **small and focused** (single responsibility).
 
-## Repository Structure
+---
 
-### Key directories:
-- `src/` -- All TypeScript source code
-  - `scenes/` -- Phaser game scenes (Boot, Preload, Menu, Game, UI)
-  - `components/` -- Data-only components (no Phaser imports)
-  - `systems/` -- Pure functions operating on components
-  - `entities/` -- Factory functions for game objects
-  - `util/` -- Utility functions
-- `tests/` -- Unit tests (Vitest)
-- `dist/` -- Build output (created by `npm run build`)
-- `public/` -- Static assets served by Vite
+## Conventional Commits
+Use: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`, `docs:`. Example:  
+`feat: add config.ts and bootstrap Game with modular scene list`
 
-### Important files:
-- `package.json` -- Scripts and dependencies
-- `vite.config.js` -- Vite build configuration
-- `tsconfig.json` -- TypeScript configuration
-- `vitest.config.ts` -- Unit test configuration
-- `eslint.config.js` -- ESLint configuration (modern flat config)
-- `.prettierrc.json` -- Prettier formatting rules
+---
 
-## Development Workflow
+## Known Warnings (OK to Ignore)
+- Vite chunk size >500KB (Phaser bundling).
+- Any ESLint “module type not specified” warning that is already accepted in the repo baseline.
 
-**Always run these commands in this order before submitting changes:**
+---
 
-1. `npm install` (if dependencies changed)
-2. `npm run typecheck`
-3. `npm run lint`
-4. `npm run format`
-5. `npm test`
-6. `npm run build`
-7. Manually test the application in browser
-
-## Known Issues and Workarounds
-
-- **ESLint warning**: "Module type not specified" warning is expected and can be ignored
-- **Vite warning**: "CJS build deprecated" warning is expected and can be ignored
-- **Build warning**: Large chunk size warning (>500KB) is expected due to Phaser bundle
-
-## Architecture Notes
-
-The codebase follows a clean architecture pattern:
-- **Scenes**: Boot → Preload → Menu → Game → UI flow
-- **ECS-like pattern**: Components (data) + Systems (logic) + Entities (factories)
-- **State management**: GameModel holds persistent state, scenes communicate via events
-- **Testability**: Logic is in pure TypeScript functions, separate from Phaser
-
-## Common Patterns
-
-- No Phaser imports in components/ or unit tests
-- Use `src/assets/keys.ts` for asset keys instead of magic strings
-- Avoid cross-scene imports, use EventBus or DI patterns
-- TypeScript strict mode with explicit return types
-- Conventional commit messages: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
+## Roadmap Signals for Copilot (don’t act unless an issue requests)
+- Tilemaps & grid rendering (Phaser tilemaps or custom grid).
+- Turn manager (phase system: player → enemy → cleanup).
+- Pathfinding (A* on grid, cost maps).
+- Data-driven units (JSON) and composition-based abilities.
+- UI overlays (turn order, action menu, combat forecast).
