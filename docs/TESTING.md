@@ -7,10 +7,9 @@
 ## Integration
 - Validate contracts: asset loader, config parsers.
 
-## E2E (Playwright)
-- Smoke: boot Preload, load assets, start Game scene.
-- Input: simulate basic keys/taps; expect scene transitions and a few entity properties.
+## Manual Testing
+- Boot Preload, load assets, start Game scene in browser.
+- Simulate basic keys/taps; check scene transitions and basic functionality.
 
 ## Commands
 - `npm test`        # unit/integration
-- `npm run test:ui` # e2e smoke
