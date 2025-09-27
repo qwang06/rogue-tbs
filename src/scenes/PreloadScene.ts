@@ -1,5 +1,14 @@
 import { ATLAS_KEYS, FONT_KEYS, MAP_KEYS } from "../assets/keys";
 
+// Type guard for customData with meta.slices
+type TextureWithMeta = Phaser.Textures.Texture & {
+  customData?: {
+    meta?: {
+      slices?: Array<{ name: string; keys: Array<{ bounds: { x: number; y: number; w: number; h: number } }> }>;
+    };
+  };
+};
+
 export class PreloadScene extends Phaser.Scene {
   constructor() {
     super("Preload");
@@ -98,26 +107,9 @@ export class PreloadScene extends Phaser.Scene {
   private createFramesFromSlices() {
     // Get the rpg-ow texture
     const texture = this.textures.get(ATLAS_KEYS.RPG_OW);
-
-    // Manually create frames from the RPG overworld atlas slices
-    // This is needed because Phaser doesn't automatically create frames from slice data
-    const slices = [
-      { name: "grass-plain", x: 0, y: 0, w: 32, h: 32 },
-      { name: "multiple-trees", x: 0, y: 32, w: 32, h: 32 },
-      { name: "three-trees", x: 32, y: 32, w: 32, h: 32 },
-      { name: "two-trees", x: 64, y: 32, w: 32, h: 32 },
-      { name: "short-mountain", x: 96, y: 32, w: 32, h: 32 },
-      { name: "tall-mountain", x: 128, y: 16, w: 32, h: 48 },
-      { name: "two-tall-mountains", x: 160, y: 16, w: 32, h: 80 },
-      { name: "short-and-tall-mountains", x: 192, y: 0, w: 32, h: 64 },
-      { name: "short-with-two-tall-mountains", x: 224, y: 0, w: 32, h: 96 },
-      { name: "multiple-trees-with-mountain", x: 256, y: 32, w: 32, h: 64 },
-      { name: "three-trees-with-mountain", x: 288, y: 32, w: 32, h: 64 },
-      { name: "two-trees-with-mountain", x: 320, y: 32, w: 32, h: 64 },
-      { name: "pillar", x: 352, y: 32, w: 32, h: 64 },
-      { name: "cursor-0", x: 896, y: 1984, w: 32, h: 32 },
-      { name: "cursor-1", x: 928, y: 1984, w: 32, h: 32 },
-    ];
+    const customData = (texture as TextureWithMeta).customData;
+    const slices =
+      customData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
 
     slices.forEach((slice) => {
       if (!texture.has(slice.name)) {
