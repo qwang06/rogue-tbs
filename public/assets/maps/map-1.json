@@ -1,0 +1,51 @@
+{
+  "mapSize": { "w": 20, "h": 20 },
+  "tileSize": 32,
+  "tileset": "rpg-ow.png",
+  "defaults": { "base": "grass-plain" },
+
+  "layers": {
+    "base": {
+      "fill": "grass-plain"
+    },
+
+    "overlay": [
+      { "x": 3,  "y": 4,  "tile": "multiple-trees" },
+      { "x": 4,  "y": 5,  "tile": "three-trees" },
+      { "x": 5,  "y": 4,  "tile": "two-trees" },
+
+      { "x": 14, "y": 3,  "tile": "multiple-trees" },
+      { "x": 15, "y": 4,  "tile": "three-trees" },
+      { "x": 16, "y": 3,  "tile": "two-trees" },
+
+      { "x": 7,  "y": 12, "tile": "two-trees" },
+      { "x": 8,  "y": 12, "tile": "three-trees" },
+      { "x": 9,  "y": 13, "tile": "multiple-trees" },
+
+      { "x": 2,  "y": 15, "tile": "two-trees" },
+      { "x": 3,  "y": 16, "tile": "three-trees" },
+      { "x": 4,  "y": 15, "tile": "multiple-trees" }
+    ],
+
+    "objects": [
+      { "x": 10, "y": 6,  "tile": "tall-mountain", "anchor": "bottom" },
+      { "x": 11, "y": 8,  "tile": "two-tall-mountains", "anchor": "bottom" },
+      { "x": 6,  "y": 8,  "tile": "short-mountain", "anchor": "bottom" },
+
+      { "x": 15, "y": 10, "tile": "short-and-tall-mountains", "anchor": "bottom" },
+      { "x": 17, "y": 11, "tile": "short-with-two-tall-mountains", "anchor": "bottom" },
+
+      { "x": 12, "y": 14, "tile": "multiple-trees-with-mountain", "anchor": "bottom" },
+      { "x": 4,  "y": 9,  "tile": "three-trees-with-mountain", "anchor": "bottom" },
+      { "x": 8,  "y": 16, "tile": "two-trees-with-mountain", "anchor": "bottom" },
+
+      { "x": 1,  "y": 6,  "tile": "pillar", "anchor": "bottom" },
+      { "x": 18, "y": 5,  "tile": "pillar", "anchor": "bottom" }
+    ]
+  },
+
+  "rules": [
+    { "if": { "layer": "overlay" }, "then": "requires_base" },
+    { "if": { "layer": "objects" }, "then": "place_with_bottom_anchor" }
+  ]
+}
