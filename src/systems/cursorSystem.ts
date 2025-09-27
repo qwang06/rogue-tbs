@@ -5,12 +5,12 @@ import type { Cursor } from "../components/Cursor";
  */
 export const Direction = {
   UP: "UP",
-  DOWN: "DOWN", 
+  DOWN: "DOWN",
   LEFT: "LEFT",
-  RIGHT: "RIGHT"
+  RIGHT: "RIGHT",
 } as const;
 
-export type DirectionType = typeof Direction[keyof typeof Direction];
+export type DirectionType = (typeof Direction)[keyof typeof Direction];
 
 /**
  * Map boundaries configuration
@@ -59,7 +59,7 @@ export function moveCursor(cursor: Cursor, direction: DirectionType): Cursor {
 export function clampCursorToBounds(cursor: Cursor, bounds: MapBounds): Cursor {
   return {
     tileX: Math.max(bounds.minX, Math.min(bounds.maxX, cursor.tileX)),
-    tileY: Math.max(bounds.minY, Math.min(bounds.maxY, cursor.tileY))
+    tileY: Math.max(bounds.minY, Math.min(bounds.maxY, cursor.tileY)),
   };
 }
 
@@ -71,8 +71,8 @@ export function clampCursorToBounds(cursor: Cursor, bounds: MapBounds): Cursor {
  * @returns New cursor position clamped to bounds
  */
 export function moveCursorWithBounds(
-  cursor: Cursor, 
-  direction: DirectionType, 
+  cursor: Cursor,
+  direction: DirectionType,
   bounds: MapBounds
 ): Cursor {
   const newCursor = moveCursor(cursor, direction);

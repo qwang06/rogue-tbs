@@ -1,8 +1,16 @@
 import Phaser from "phaser";
 import { spawnUnit } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
-import { createCursorVisual, updateCursorVisual } from "../entities/cursorFactory";
-import { Direction, moveCursorWithBounds, type MapBounds, type DirectionType } from "../systems/cursorSystem";
+import {
+  createCursorVisual,
+  updateCursorVisual,
+} from "../entities/cursorFactory";
+import {
+  Direction,
+  moveCursorWithBounds,
+  type MapBounds,
+  type DirectionType,
+} from "../systems/cursorSystem";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
@@ -11,7 +19,7 @@ export class GameScene extends Phaser.Scene {
     minX: 0,
     minY: 0,
     maxX: 39, // Based on FE7-map.json: 40 tiles wide (0-39)
-    maxY: 29  // Based on FE7-map.json: 30 tiles high (0-29)
+    maxY: 29, // Based on FE7-map.json: 30 tiles high (0-29)
   };
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | null = null;
   private wasdKeys: { [key: string]: Phaser.Input.Keyboard.Key } = {};
@@ -19,20 +27,26 @@ export class GameScene extends Phaser.Scene {
   constructor() {
     super("Game");
   }
-  
+
   create() {
     const map = this.createTilemap();
     if (map) {
       this.setupCamera(map);
-      
+
       // Sprite positions
       const ARCHER_TILE_POS = { x: 2, y: 2 };
       const CLOUD_TILE_POS = { x: 5, y: 5 };
 
       // Spawn units using the helper function
       spawnUnit(this, "archer", "idle-0", ARCHER_TILE_POS.x, ARCHER_TILE_POS.y);
-      spawnUnit(this, "ff7-cloud", "idle-0", CLOUD_TILE_POS.x, CLOUD_TILE_POS.y);
-      
+      spawnUnit(
+        this,
+        "ff7-cloud",
+        "idle-0",
+        CLOUD_TILE_POS.x,
+        CLOUD_TILE_POS.y
+      );
+
       // Create cursor visual after the tilemap layers
       this.setupCursor();
       this.setupInput();
@@ -69,7 +83,7 @@ export class GameScene extends Phaser.Scene {
   private setupInput() {
     // Setup arrow keys
     this.cursors = this.input.keyboard?.createCursorKeys() || null;
-    
+
     // Setup WASD keys
     if (this.input.keyboard) {
       this.wasdKeys = {
@@ -116,7 +130,11 @@ export class GameScene extends Phaser.Scene {
 
     // Move cursor if direction was detected
     if (direction) {
-      this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
+      this.cursor = moveCursorWithBounds(
+        this.cursor,
+        direction,
+        this.mapBounds
+      );
       updateCursorVisual(this.cursorVisual, this.cursor);
     }
   }
