@@ -38,8 +38,8 @@ describe('Unit Factory', () => {
     const mockSprite = mockScene.add.sprite();
     const sprite = spawnUnit(mockScene, 'test-key', 'test-frame', 0, 0);
 
-    // Should set origin to (0.5, 1) for bottom-center alignment
-    expect(mockSprite.setOrigin).toHaveBeenCalledWith(0.5, 1);
+    // Should set origin to (0.5, 0.5) for bottom-center alignment
+    expect(mockSprite.setOrigin).toHaveBeenCalledWith(0.5, 0.5);
   });
 
   it('should scale sprite based on TILE_SIZE and frame width', () => {
