@@ -54,7 +54,6 @@ export class GameScene extends Phaser.Scene {
     const mapData = this.cache.json.get(MAP_KEYS.GENERATED_MAP_1);
     const cameraBounds = getMapCameraBounds(mapData);
 
-    this.cameras.main.setZoom(2);
     this.cameras.main.roundPixels = true;
     this.cameras.main.setBounds(0, 0, cameraBounds.width, cameraBounds.height);
     this.cameras.main.centerOn(0, 0);
