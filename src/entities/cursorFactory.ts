@@ -1,57 +1,61 @@
 import Phaser from "phaser";
-import { getTileCenter, TILE_SIZE } from "../util/tile";
+import { getTileCenter } from "../util/tile";
 import type { Cursor } from "../components/Cursor";
+import { ATLAS_KEYS, ANIMATION_KEYS, RPG_OW_FRAMES } from "../assets/keys";
 
 /**
- * Creates a cursor visual representation (a highlighted square outline)
+ * Creates a cursor visual representation using animated sprites
  * @param scene The Phaser scene to add the cursor to
  * @param cursor The cursor position data
- * @returns The graphics object representing the cursor
+ * @returns The sprite object representing the cursor
  */
 export function createCursorVisual(
   scene: Phaser.Scene,
   cursor: Cursor
-): Phaser.GameObjects.Graphics {
-  const graphics = scene.add.graphics();
-  updateCursorVisual(graphics, cursor);
-  return graphics;
+): Phaser.GameObjects.Sprite {
+  // Create the cursor animation if it doesn't exist
+  if (!scene.anims.exists(ANIMATION_KEYS.CURSOR_BLINK)) {
+    scene.anims.create({
+      key: ANIMATION_KEYS.CURSOR_BLINK,
+      frames: [
+        { key: ATLAS_KEYS.RPG_OW, frame: RPG_OW_FRAMES.CURSOR_0 },
+        { key: ATLAS_KEYS.RPG_OW, frame: RPG_OW_FRAMES.CURSOR_1 }
+      ],
+      frameRate: 2,
+      repeat: -1
+    });
+  }
+
+  const position = getTileCenter(cursor.tileX, cursor.tileY);
+  const sprite = scene.add.sprite(position.x, position.y, ATLAS_KEYS.RPG_OW, RPG_OW_FRAMES.CURSOR_0);
+  
+  // Start the blinking animation
+  sprite.play(ANIMATION_KEYS.CURSOR_BLINK);
+  
+  return sprite;
 }
 
 /**
  * Updates the cursor visual to match the cursor position
- * @param graphics The graphics object to update
+ * @param sprite The sprite object to update
  * @param cursor The cursor position data
  */
 export function updateCursorVisual(
-  graphics: Phaser.GameObjects.Graphics,
+  sprite: Phaser.GameObjects.Sprite,
   cursor: Cursor
 ): void {
   const position = getTileCenter(cursor.tileX, cursor.tileY);
-  
-  // Clear previous drawing
-  graphics.clear();
-  
-  // Draw cursor outline - yellow square around the tile
-  graphics.lineStyle(2, 0xffff00, 1); // 2px yellow line
-  
-  // Draw rectangle centered on tile
-  const halfTile = TILE_SIZE / 2;
-  graphics.strokeRect(
-    position.x - halfTile,
-    position.y - halfTile,
-    TILE_SIZE,
-    TILE_SIZE
-  );
+  sprite.setPosition(position.x, position.y);
 }
 
 /**
  * Sets the cursor visual position based on cursor data
- * @param graphics The graphics object to position
+ * @param sprite The sprite object to position
  * @param cursor The cursor position data
  */
 export function setCursorPosition(
-  graphics: Phaser.GameObjects.Graphics,
+  sprite: Phaser.GameObjects.Sprite,
   cursor: Cursor
 ): void {
-  updateCursorVisual(graphics, cursor);
+  updateCursorVisual(sprite, cursor);
 }
