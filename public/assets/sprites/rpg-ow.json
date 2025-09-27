@@ -21,7 +21,20 @@
    { "name": "pointer-1", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 928, "y": 1952, "w": 32, "h": 32 } }] },
    { "name": "pointer-0", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 896, "y": 1952, "w": 32, "h": 32 } }] },
    { "name": "cursor-1", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 928, "y": 1984, "w": 32, "h": 32 } }] },
-   { "name": "cursor-0", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 896, "y": 1984, "w": 32, "h": 32 } }] }
+   { "name": "cursor-0", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 896, "y": 1984, "w": 32, "h": 32 } }] },
+   { "name": "pillar", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 352, "y": 32, "w": 32, "h": 64 } }] },
+   { "name": "mountain_with_trees_double", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 320, "y": 32, "w": 32, "h": 64 } }] },
+   { "name": "mountain_with_trees_triple", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 288, "y": 32, "w": 32, "h": 64 } }] },
+   { "name": "mountain_with_trees_multiple", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 256, "y": 32, "w": 32, "h": 64 } }] },
+   { "name": "mountain_short_triple", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 224, "y": 0, "w": 32, "h": 96 } }] },
+   { "name": "mountain_short_double", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 192, "y": 0, "w": 32, "h": 64 } }] },
+   { "name": "mountain_double", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 160, "y": 0, "w": 32, "h": 96 } }] },
+   { "name": "mountain_tall", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 128, "y": 0, "w": 32, "h": 64 } }] },
+   { "name": "mountain_short", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 96, "y": 32, "w": 32, "h": 32 } }] },
+   { "name": "trees_double", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 64, "y": 32, "w": 32, "h": 32 } }] },
+   { "name": "trees_triple", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 32, "y": 32, "w": 32, "h": 32 } }] },
+   { "name": "trees_multiple", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 32, "w": 32, "h": 32 } }] },
+   { "name": "grass_plain", "color": "#0000ffff", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 0, "w": 32, "h": 32 } }] }
   ]
  }
 }
