@@ -25,7 +25,7 @@ export function spawnUnit(
   const sprite = scene.add.sprite(position.x, position.y, key, frame);
   
   // Set origin so feet are aligned with bottom-center of tile
-  sprite.setOrigin(0.5, 1);
+  sprite.setOrigin(0.5, 0.5);
   
   // Scale the sprite based on TILE_SIZE
   // Get the frame data to determine the original width
