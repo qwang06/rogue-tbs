@@ -11,6 +11,8 @@ import {
   type MapBounds,
   type DirectionType,
 } from "../systems/cursorSystem";
+import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
+import { MAP_KEYS } from "../assets/keys";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
@@ -18,8 +20,8 @@ export class GameScene extends Phaser.Scene {
   private mapBounds: MapBounds = {
     minX: 0,
     minY: 0,
-    maxX: 39, // Based on FE7-map.json: 40 tiles wide (0-39)
-    maxY: 29, // Based on FE7-map.json: 30 tiles high (0-29)
+    maxX: 19, // Will be updated when map loads
+    maxY: 19, // Will be updated when map loads
   };
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | null = null;
   private wasdKeys: { [key: string]: Phaser.Input.Keyboard.Key } = {};
@@ -29,48 +31,32 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    const map = this.createTilemap();
-    if (map) {
-      this.setupCamera(map);
+    // Load the AI-generated map
+    this.mapBounds = loadGeneratedMap(this, MAP_KEYS.GENERATED_MAP_1);
+    this.setupCamera();
 
-      // Sprite positions
-      const ARCHER_TILE_POS = { x: 2, y: 2 };
-      const CLOUD_TILE_POS = { x: 5, y: 5 };
+    // Sprite positions
+    const ARCHER_TILE_POS = { x: 2, y: 2 };
+    const CLOUD_TILE_POS = { x: 5, y: 5 };
 
-      // Spawn units using the helper function
-      spawnUnit(this, "archer", "idle-0", ARCHER_TILE_POS.x, ARCHER_TILE_POS.y);
-      spawnUnit(
-        this,
-        "ff7-cloud",
-        "idle-0",
-        CLOUD_TILE_POS.x,
-        CLOUD_TILE_POS.y
-      );
+    // Spawn units using the helper function
+    spawnUnit(this, "archer", "idle-0", ARCHER_TILE_POS.x, ARCHER_TILE_POS.y);
+    spawnUnit(this, "ff7-cloud", "idle-0", CLOUD_TILE_POS.x, CLOUD_TILE_POS.y);
 
-      // Create cursor visual after the tilemap layers
-      this.setupCursor();
-      this.setupInput();
-    }
+    // Create cursor visual after the map is loaded
+    this.setupCursor();
+    this.setupInput();
     this.scene.launch("UI");
   }
 
-  private createTilemap(): Phaser.Tilemaps.Tilemap | null {
-    const map = this.make.tilemap({ key: "fe7-map" });
-    const tileset = map.addTilesetImage("FE7-variant", "fe7-tiles");
-    if (!tileset) {
-      return null;
-    }
-    map.createLayer("Ground", tileset, 0, 0);
-    if (map.getLayer("Terrain")) {
-      map.createLayer("Terrain", tileset, 0, 0);
-    }
-    return map;
-  }
+  private setupCamera() {
+    // Get the map data to calculate camera bounds
+    const mapData = this.cache.json.get(MAP_KEYS.GENERATED_MAP_1);
+    const cameraBounds = getMapCameraBounds(mapData);
 
-  private setupCamera(map: Phaser.Tilemaps.Tilemap) {
     this.cameras.main.setZoom(2);
     this.cameras.main.roundPixels = true;
-    this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+    this.cameras.main.setBounds(0, 0, cameraBounds.width, cameraBounds.height);
     this.cameras.main.centerOn(0, 0);
   }
 

@@ -11,19 +11,14 @@ export const ATLAS_KEYS = {
   RPG_UI: "rpg-ui",
 } as const;
 
-// Image keys
-export const IMAGE_KEYS = {
-  FE7_TILES: "fe7-tiles",
-} as const;
-
 // Font keys
 export const FONT_KEYS = {
   ARCADE: "arcade",
 } as const;
 
-// Tilemap keys
-export const TILEMAP_KEYS = {
-  FE7_MAP: "fe7-map",
+// Generated map JSON keys
+export const MAP_KEYS = {
+  GENERATED_MAP_1: "map-1",
 } as const;
 
 // Animation keys
