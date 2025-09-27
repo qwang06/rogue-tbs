@@ -15,6 +15,6 @@ describe('Tile utility', () => {
   });
 
   it('should have correct TILE_SIZE constant', () => {
-    expect(TILE_SIZE).toBe(16);
+    expect(TILE_SIZE).toBe(32);
   });
 });

@@ -51,8 +51,8 @@ describe('Unit Factory', () => {
     
     const sprite = spawnUnit(mockScene, 'test-key', 'test-frame', 0, 0);
 
-    // Should scale to fit TILE_SIZE (16px / 32px = 0.5)
-    expect(mockSprite.setScale).toHaveBeenCalledWith(0.5);
+    // Should scale to fit TILE_SIZE (32px / 32px = 1.0)
+    expect(mockSprite.setScale).toHaveBeenCalledWith(1.0);
   });
 
   it('should handle different frame widths correctly', () => {
@@ -64,8 +64,8 @@ describe('Unit Factory', () => {
     
     const sprite = spawnUnit(mockScene, 'test-key', 'test-frame', 0, 0);
 
-    // Should scale to fit TILE_SIZE (16px / 20px = 0.8)
-    expect(mockSprite.setScale).toHaveBeenCalledWith(0.8);
+    // Should scale to fit TILE_SIZE (32px / 20px = 1.6)
+    expect(mockSprite.setScale).toHaveBeenCalledWith(1.6);
   });
 
   it('should access correct texture and frame data', () => {
