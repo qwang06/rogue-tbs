@@ -19,19 +19,24 @@ export function createCursorVisual(
       key: ANIMATION_KEYS.CURSOR_BLINK,
       frames: [
         { key: ATLAS_KEYS.RPG_OW, frame: RPG_OW_FRAMES.CURSOR_0 },
-        { key: ATLAS_KEYS.RPG_OW, frame: RPG_OW_FRAMES.CURSOR_1 }
+        { key: ATLAS_KEYS.RPG_OW, frame: RPG_OW_FRAMES.CURSOR_1 },
       ],
       frameRate: 2,
-      repeat: -1
+      repeat: -1,
     });
   }
 
   const position = getTileCenter(cursor.tileX, cursor.tileY);
-  const sprite = scene.add.sprite(position.x, position.y, ATLAS_KEYS.RPG_OW, RPG_OW_FRAMES.CURSOR_0);
-  
+  const sprite = scene.add.sprite(
+    position.x,
+    position.y,
+    ATLAS_KEYS.RPG_OW,
+    RPG_OW_FRAMES.CURSOR_0
+  );
+
   // Start the blinking animation
   sprite.play(ANIMATION_KEYS.CURSOR_BLINK);
-  
+
   return sprite;
 }
 
