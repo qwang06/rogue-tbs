@@ -6,7 +6,7 @@ import { Direction, moveCursorWithBounds, type MapBounds, type DirectionType } f
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
-  private cursorVisual: Phaser.GameObjects.Graphics | null = null;
+  private cursorVisual: Phaser.GameObjects.Sprite | null = null;
   private mapBounds: MapBounds = {
     minX: 0,
     minY: 0,
