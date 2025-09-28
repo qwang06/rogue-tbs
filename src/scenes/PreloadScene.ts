@@ -63,18 +63,6 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private loadGameAssets() {
-    // Load archer and ff7-cloud spritesheets (with JSON)
-    this.load.atlas(
-      ATLAS_KEYS.ARCHER,
-      "assets/sprites/archer.png",
-      "assets/sprites/archer.json"
-    );
-    this.load.atlas(
-      ATLAS_KEYS.FF7_CLOUD,
-      "assets/sprites/ff7-cloud.png",
-      "assets/sprites/ff7-cloud.json"
-    );
-
     // Load Acolyte spritesheets (4x4 format)
     this.load.spritesheet(
       ATLAS_KEYS.ACOLYTE_01_IDLE,

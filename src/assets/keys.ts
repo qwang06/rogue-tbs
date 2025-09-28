@@ -5,8 +5,6 @@
 
 // Atlas keys
 export const ATLAS_KEYS = {
-  ARCHER: "archer",
-  FF7_CLOUD: "ff7-cloud",
   RPG_OW: "rpg-ow",
   RPG_UI: "rpg-ui",
   // Acolyte sprite atlases
