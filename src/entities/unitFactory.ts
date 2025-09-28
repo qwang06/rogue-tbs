@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { getTileCenter, TILE_SIZE } from "../util/tile";
 import { Unit, createUnit, getUnitFrameName, UnitSprites } from "../components/Unit";
 import { ATLAS_KEYS } from "../assets/keys";
+import { createDirectionAnimationFrames } from "../util/spritesheet";
 
 /**
  * Spawns a unit sprite at the specified tile coordinates with proper alignment and scaling.
@@ -62,6 +63,10 @@ export function spawnUnitFromData(
     unit.position.tileX,
     unit.position.tileY
   );
+
+  // Create and play appropriate animation for the unit
+  createUnitAnimations(scene, unit);
+  playUnitAnimation(sprite, unit);
 
   return { unit, sprite };
 }
@@ -138,4 +143,44 @@ export function createPredefinedUnit(
     config.sprites,
     config.baseStats
   );
+}
+
+/**
+ * Creates Phaser animations for a unit if they don't already exist
+ * @param scene The Phaser scene to create animations in
+ * @param unit The unit to create animations for
+ */
+export function createUnitAnimations(scene: Phaser.Scene, unit: Unit): void {
+  const directions: Array<'front' | 'left' | 'right' | 'back'> = ['front', 'left', 'right', 'back'];
+  const animationStates: Array<'idle' | 'move'> = ['idle', 'move'];
+
+  animationStates.forEach(state => {
+    const textureKey = state === 'idle' ? unit.sprites.idleKey : unit.sprites.moveKey;
+    
+    directions.forEach(direction => {
+      const animationKey = `${unit.sprites.baseKey}_${state}_${direction}`;
+      
+      // Only create animation if it doesn't already exist
+      if (!scene.anims.exists(animationKey)) {
+        const frames = createDirectionAnimationFrames(textureKey, direction, 4);
+        
+        scene.anims.create({
+          key: animationKey,
+          frames: frames,
+          frameRate: 6, // Slow animation for idle, can be adjusted
+          repeat: -1, // Loop indefinitely
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Plays the appropriate animation for a unit based on its current state
+ * @param sprite The sprite to play animation on
+ * @param unit The unit data to determine which animation to play
+ */
+export function playUnitAnimation(sprite: Phaser.GameObjects.Sprite, unit: Unit): void {
+  const animationKey = `${unit.sprites.baseKey}_${unit.animationState}_${unit.facing}`;
+  sprite.play(animationKey);
 }

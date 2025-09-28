@@ -8,6 +8,7 @@ const createMockScene = () => ({
     sprite: vi.fn().mockReturnValue({
       setOrigin: vi.fn().mockReturnThis(),
       setScale: vi.fn().mockReturnThis(),
+      play: vi.fn().mockReturnThis(),
     }),
   },
   textures: {
@@ -16,6 +17,10 @@ const createMockScene = () => ({
         width: 32, // Mock frame width
       }),
     }),
+  },
+  anims: {
+    exists: vi.fn().mockReturnValue(false), // Always create new animations in tests
+    create: vi.fn(),
   },
 });
 
@@ -138,6 +143,20 @@ describe('Unit Factory', () => {
       );
     });
 
+    it('should create and play idle animation for spawned unit', () => {
+      const mockScene = createMockScene() as any;
+      const mockSprite = mockScene.add.sprite();
+      const unit = createPredefinedUnit('ACOLYTE_01', 'unit_001', { tileX: 1, tileY: 2 });
+      
+      const result = spawnUnitFromData(mockScene, unit);
+
+      // Should create animations for all directions and states
+      expect(mockScene.anims.create).toHaveBeenCalled();
+      
+      // Should play the appropriate idle animation
+      expect(mockSprite.play).toHaveBeenCalledWith('acolyte_01_idle_front');
+    });
+
     it('should use move sprite when unit is in move state', () => {
       const mockScene = createMockScene() as any;
       let unit = createPredefinedUnit('ACOLYTE_01', 'unit_001', { tileX: 1, tileY: 2 });
@@ -157,6 +176,7 @@ describe('Unit Factory', () => {
 
     it('should use correct frame based on unit facing', () => {
       const mockScene = createMockScene() as any;
+      const mockSprite = mockScene.add.sprite();
       let unit = createPredefinedUnit('ACOLYTE_01', 'unit_001', { tileX: 0, tileY: 0 });
       
       // Change unit facing
@@ -170,6 +190,9 @@ describe('Unit Factory', () => {
         unit.sprites.idleKey,
         'left_0' // Should use left facing frame
       );
+      
+      // Should play left-facing idle animation
+      expect(mockSprite.play).toHaveBeenCalledWith('acolyte_01_idle_left');
     });
   });
 
