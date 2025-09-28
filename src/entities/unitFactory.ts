@@ -1,8 +1,10 @@
 import Phaser from "phaser";
 import { getTileCenter, TILE_SIZE } from "../util/tile";
-import { Unit, createUnit, getUnitFrameName, UnitSprites } from "../components/Unit";
-import { ATLAS_KEYS } from "../assets/keys";
+import { Unit, createUnit, getUnitFrameName } from "../components/Unit";
 import { createDirectionAnimationFrames } from "../util/spritesheet";
+import { UNIT_TYPES, UnitTypeKey } from "../config/unitTypes";
+import { DEFAULT_UNIT_ANIMATION_CONFIG, UNIT_DIRECTIONS, UNIT_ANIMATION_STATES } from "../config/animations";
+import { TilePosition, SpawnUnitResult } from "../types/units";
 
 /**
  * Spawns a unit sprite at the specified tile coordinates with proper alignment and scaling.
@@ -52,7 +54,7 @@ export function spawnUnit(
 export function spawnUnitFromData(
   scene: Phaser.Scene,
   unit: Unit
-): { unit: Unit; sprite: Phaser.GameObjects.Sprite } {
+): SpawnUnitResult {
   const frameName = getUnitFrameName(unit);
   const textureKey = unit.animationState === 'idle' ? unit.sprites.idleKey : unit.sprites.moveKey;
   
@@ -72,56 +74,6 @@ export function spawnUnitFromData(
 }
 
 /**
- * Predefined unit type configurations for easy instantiation
- */
-export const UNIT_TYPES = {
-  ACOLYTE_01: {
-    name: "Acolyte",
-    unitType: "Acolyte",
-    sprites: {
-      baseKey: "acolyte_01",
-      idleKey: ATLAS_KEYS.ACOLYTE_01_IDLE,
-      moveKey: ATLAS_KEYS.ACOLYTE_01_MOVE,
-      portraitKey: ATLAS_KEYS.ACOLYTE_01_PORTRAIT,
-    } as UnitSprites,
-    baseStats: {
-      hp: 80,
-      maxHp: 80,
-      mp: 30,
-      maxMp: 30,
-      attack: 20,
-      defense: 12,
-      magicAttack: 25,
-      magicDefense: 18,
-      speed: 12,
-      luck: 8,
-    },
-  },
-  ACOLYTE_06: {
-    name: "Battle Acolyte",
-    unitType: "Acolyte",
-    sprites: {
-      baseKey: "acolyte_06",
-      idleKey: ATLAS_KEYS.ACOLYTE_06_IDLE,
-      moveKey: ATLAS_KEYS.ACOLYTE_06_MOVE,
-      portraitKey: ATLAS_KEYS.ACOLYTE_06_PORTRAIT,
-    } as UnitSprites,
-    baseStats: {
-      hp: 90,
-      maxHp: 90,
-      mp: 25,
-      maxMp: 25,
-      attack: 28,
-      defense: 16,
-      magicAttack: 20,
-      magicDefense: 14,
-      speed: 14,
-      luck: 6,
-    },
-  },
-} as const;
-
-/**
  * Factory function to create predefined unit types
  * @param unitTypeKey The predefined unit type
  * @param id Unique identifier for the unit
@@ -129,9 +81,9 @@ export const UNIT_TYPES = {
  * @returns Unit instance
  */
 export function createPredefinedUnit(
-  unitTypeKey: keyof typeof UNIT_TYPES,
+  unitTypeKey: UnitTypeKey,
   id: string,
-  position: { tileX: number; tileY: number }
+  position: TilePosition
 ): Unit {
   const config = UNIT_TYPES[unitTypeKey];
   
@@ -151,24 +103,25 @@ export function createPredefinedUnit(
  * @param unit The unit to create animations for
  */
 export function createUnitAnimations(scene: Phaser.Scene, unit: Unit): void {
-  const directions: Array<'front' | 'left' | 'right' | 'back'> = ['front', 'left', 'right', 'back'];
-  const animationStates: Array<'idle' | 'move'> = ['idle', 'move'];
-
-  animationStates.forEach(state => {
+  UNIT_ANIMATION_STATES.forEach(state => {
     const textureKey = state === 'idle' ? unit.sprites.idleKey : unit.sprites.moveKey;
     
-    directions.forEach(direction => {
+    UNIT_DIRECTIONS.forEach(direction => {
       const animationKey = `${unit.sprites.baseKey}_${state}_${direction}`;
       
       // Only create animation if it doesn't already exist
       if (!scene.anims.exists(animationKey)) {
-        const frames = createDirectionAnimationFrames(textureKey, direction, 4);
+        const frames = createDirectionAnimationFrames(
+          textureKey, 
+          direction, 
+          DEFAULT_UNIT_ANIMATION_CONFIG.framesPerDirection
+        );
         
         scene.anims.create({
           key: animationKey,
           frames: frames,
-          frameRate: 6, // Slow animation for idle, can be adjusted
-          repeat: -1, // Loop indefinitely
+          frameRate: DEFAULT_UNIT_ANIMATION_CONFIG.frameRate,
+          repeat: DEFAULT_UNIT_ANIMATION_CONFIG.repeat ? -1 : 0,
         });
       }
     });

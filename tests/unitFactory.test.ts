@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { spawnUnit, spawnUnitFromData, createPredefinedUnit, UNIT_TYPES } from '../src/entities/unitFactory';
+import { spawnUnit, spawnUnitFromData, createPredefinedUnit } from '../src/entities/unitFactory';
+import { UNIT_TYPES } from '../src/config/unitTypes';
 import { TILE_SIZE } from '../src/util/tile';
 
 // Mock Phaser objects for testing
