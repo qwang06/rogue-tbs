@@ -6,6 +6,16 @@
  * - Row 1: left-facing frames (0, 1, 2, 3)  
  * - Row 2: right-facing frames (0, 1, 2, 3)
  * - Row 3: back-facing frames (0, 1, 2, 3)
+ * 
+ * Example usage:
+ * ```typescript
+ * // For a 4x4 Acolyte spritesheet
+ * createSpritesheetFrames(texture, { frameWidth: 32, frameHeight: 32, rows: 4, cols: 4 });
+ * 
+ * // For a 2x3 character spritesheet with custom directions
+ * const customDirections = { idle: 0, walk: 1 };
+ * createSpritesheetFrames(texture, { frameWidth: 64, frameHeight: 64, rows: 2, cols: 3 }, customDirections);
+ * ```
  */
 
 export interface SpritesheetFrameConfig {
@@ -26,6 +36,16 @@ export const ACOLYTE_SPRITESHEET_CONFIG: SpritesheetFrameConfig = {
 };
 
 /**
+ * Common spritesheet configurations for different layouts
+ */
+export const SPRITESHEET_PRESETS = {
+  ACOLYTE_4X4: ACOLYTE_SPRITESHEET_CONFIG,
+  STANDARD_2X2: { frameWidth: 32, frameHeight: 32, rows: 2, cols: 2 },
+  STANDARD_3X3: { frameWidth: 32, frameHeight: 32, rows: 3, cols: 3 },
+  LARGE_4X4: { frameWidth: 64, frameHeight: 64, rows: 4, cols: 4 },
+} as const;
+
+/**
  * Direction mapping for 4x4 Acolyte spritesheets
  */
 export const DIRECTION_ROWS = {
@@ -36,14 +56,43 @@ export const DIRECTION_ROWS = {
 } as const;
 
 /**
- * Creates frame definitions for a 4x4 spritesheet
- * @param textureKey The texture key to add frames to
- * @param texture The Phaser texture object
- * @param config Frame configuration
+ * Common direction mappings for different spritesheet layouts
  */
-export function create4x4Frames(
+export const DIRECTION_MAPPINGS = {
+  // 4-direction character sprites (Acolyte style)
+  FOUR_DIRECTION: DIRECTION_ROWS,
+  
+  // 2-direction sprites (side-scroller style)
+  TWO_DIRECTION: {
+    left: 0,
+    right: 1,
+  },
+  
+  // Single direction with different animation states
+  ANIMATION_STATES: {
+    idle: 0,
+    walk: 1,
+    run: 2,
+    attack: 3,
+  },
+  
+  // Simple 2-state sprites
+  SIMPLE_STATES: {
+    idle: 0,
+    active: 1,
+  },
+} as const;
+
+/**
+ * Creates frame definitions for a spritesheet with configurable row/column layout
+ * @param texture The Phaser texture object
+ * @param config Frame configuration including dimensions and layout
+ * @param directionMapping Optional custom mapping of direction names to row indices
+ */
+export function createSpritesheetFrames(
   texture: Phaser.Textures.Texture,
-  config: SpritesheetFrameConfig = ACOLYTE_SPRITESHEET_CONFIG
+  config: SpritesheetFrameConfig,
+  directionMapping: Record<string, number> = DIRECTION_ROWS
 ): void {
   // Calculate actual frame dimensions based on texture size
   const source = texture.source[0];
@@ -51,7 +100,10 @@ export function create4x4Frames(
   const actualFrameHeight = source.height / config.rows;
 
   // Create frames for each direction and frame index
-  Object.entries(DIRECTION_ROWS).forEach(([direction, row]) => {
+  Object.entries(directionMapping).forEach(([direction, row]) => {
+    // Skip if row index exceeds available rows
+    if (row >= config.rows) return;
+    
     for (let col = 0; col < config.cols; col++) {
       const frameName = `${direction}_${col}`;
       const x = col * actualFrameWidth;
@@ -63,6 +115,19 @@ export function create4x4Frames(
       }
     }
   });
+}
+
+/**
+ * Creates frame definitions for a 4x4 Acolyte spritesheet
+ * @param texture The Phaser texture object
+ * @param config Frame configuration (defaults to ACOLYTE_SPRITESHEET_CONFIG)
+ * @deprecated Use createSpritesheetFrames for more flexibility
+ */
+export function create4x4Frames(
+  texture: Phaser.Textures.Texture,
+  config: SpritesheetFrameConfig = ACOLYTE_SPRITESHEET_CONFIG
+): void {
+  createSpritesheetFrames(texture, config, DIRECTION_ROWS);
 }
 
 /**
