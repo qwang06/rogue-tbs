@@ -1,6 +1,9 @@
 import Phaser from "phaser";
+import { InputController } from "../input/InputController";
 
 export class MenuScene extends Phaser.Scene {
+  private inputController: InputController | null = null;
+
   constructor() {
     super("Menu");
   }
@@ -24,9 +27,28 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Listen for SPACE key and start GameScene when pressed
-    this.input.keyboard?.once("keydown-SPACE", () => {
+    // Setup InputController
+    this.setupInput();
+  }
+
+  private setupInput() {
+    // Create InputController
+    this.inputController = new InputController(this);
+    
+    // Listen for confirm event to start the game
+    this.inputController.on('confirm', () => {
       this.scene.start("Game");
     });
+  }
+
+  update(_time: number, delta: number) {
+    // Update InputController 
+    this.inputController?.update(delta);
+  }
+
+  shutdown() {
+    // Clean up InputController
+    this.inputController?.destroy();
+    this.inputController = null;
   }
 }
