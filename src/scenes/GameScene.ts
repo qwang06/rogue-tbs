@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { spawnUnit } from "../entities/unitFactory";
+import { spawnUnitFromData, createPredefinedUnit } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import {
   createCursorVisual,
@@ -14,6 +14,7 @@ import {
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
 import { InputController } from "../input/InputController";
+import { Unit } from "../components/Unit";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
@@ -25,6 +26,8 @@ export class GameScene extends Phaser.Scene {
     maxY: 19, // Will be updated when map loads
   };
   private inputController: InputController | null = null;
+  // Store units and their sprites for future reference
+  private units: Array<{ unit: Unit; sprite: Phaser.GameObjects.Sprite }> = [];
 
   constructor() {
     super("Game");
@@ -35,13 +38,25 @@ export class GameScene extends Phaser.Scene {
     this.mapBounds = loadGeneratedMap(this, MAP_KEYS.GENERATED_MAP_1);
     this.setupCamera();
 
-    // Sprite positions
-    const ARCHER_TILE_POS = { x: 2, y: 2 };
-    const CLOUD_TILE_POS = { x: 5, y: 5 };
+    // Unit positions
+    const ACOLYTE_01_POS = { x: 2, y: 2 };
+    const ACOLYTE_06_POS = { x: 5, y: 5 };
 
-    // Spawn units using the helper function
-    spawnUnit(this, "archer", "idle-0", ARCHER_TILE_POS.x, ARCHER_TILE_POS.y);
-    spawnUnit(this, "ff7-cloud", "idle-0", CLOUD_TILE_POS.x, CLOUD_TILE_POS.y);
+    // Create and spawn units using the new Unit system
+    const acolyte01 = createPredefinedUnit("ACOLYTE_01", "unit_001", { 
+      tileX: ACOLYTE_01_POS.x, 
+      tileY: ACOLYTE_01_POS.y 
+    });
+    const acolyte06 = createPredefinedUnit("ACOLYTE_06", "unit_002", { 
+      tileX: ACOLYTE_06_POS.x, 
+      tileY: ACOLYTE_06_POS.y 
+    });
+
+    // Spawn the units and store their data
+    const unit1Data = spawnUnitFromData(this, acolyte01);
+    const unit2Data = spawnUnitFromData(this, acolyte06);
+    
+    this.units.push(unit1Data, unit2Data);
 
     // Create cursor visual after the map is loaded
     this.setupCursor();

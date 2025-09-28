@@ -5,10 +5,15 @@
 
 // Atlas keys
 export const ATLAS_KEYS = {
-  ARCHER: "archer",
-  FF7_CLOUD: "ff7-cloud",
   RPG_OW: "rpg-ow",
   RPG_UI: "rpg-ui",
+  // Acolyte sprite atlases
+  ACOLYTE_01_IDLE: "acolyte_01_idle",
+  ACOLYTE_01_MOVE: "acolyte_01_move",
+  ACOLYTE_01_PORTRAIT: "acolyte_01_portrait",
+  ACOLYTE_06_IDLE: "acolyte_06_idle",
+  ACOLYTE_06_MOVE: "acolyte_06_move",
+  ACOLYTE_06_PORTRAIT: "acolyte_06_portrait",
 } as const;
 
 // Font keys
