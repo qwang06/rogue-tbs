@@ -142,14 +142,26 @@ export class PreloadScene extends Phaser.Scene {
 
   private createFramesFromSlices() {
     // Get the rpg-ow texture
-    const texture = this.textures.get(ATLAS_KEYS.RPG_OW);
-    const customData = (texture as TextureWithMeta).customData;
-    const slices =
-      customData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
+    const rpgOwTexture = this.textures.get(ATLAS_KEYS.RPG_OW);
+    const rpgOwCustomData = (rpgOwTexture as TextureWithMeta).customData;
+    const rpgOwSlices =
+      rpgOwCustomData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
 
-    slices.forEach((slice) => {
-      if (!texture.has(slice.name)) {
-        texture.add(slice.name, 0, slice.x, slice.y, slice.w, slice.h);
+    rpgOwSlices.forEach((slice) => {
+      if (!rpgOwTexture.has(slice.name)) {
+        rpgOwTexture.add(slice.name, 0, slice.x, slice.y, slice.w, slice.h);
+      }
+    });
+
+    // Get the rpg-ui texture and create frames from slices
+    const rpgUiTexture = this.textures.get(ATLAS_KEYS.RPG_UI);
+    const rpgUiCustomData = (rpgUiTexture as TextureWithMeta).customData;
+    const rpgUiSlices =
+      rpgUiCustomData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
+
+    rpgUiSlices.forEach((slice) => {
+      if (!rpgUiTexture.has(slice.name)) {
+        rpgUiTexture.add(slice.name, 0, slice.x, slice.y, slice.w, slice.h);
       }
     });
   }
