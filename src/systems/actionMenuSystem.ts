@@ -14,11 +14,13 @@ export interface ActionMenuConfig {
 }
 
 export const DEFAULT_ACTION_MENU_CONFIG: ActionMenuConfig = {
-  width: 140,   // Updated: was 120, now 120 + 20 = 140
-  height: 120,  // Updated: was 80, now 80 + 40 = 120
+  width: 150,
+  height: 200,
   offsetX: 40,
-  buttonSpacing: 30
+  buttonSpacing: 30,
 };
+
+const BUTTON_COLOR = "abcabc";
 
 /**
  * Create action menu container with nineslice background and buttons
@@ -31,43 +33,62 @@ export function createActionMenu(
   // Calculate menu position (to the right of the unit)
   const unitPixelPos = {
     x: unit.position.tileX * TILE_SIZE + TILE_SIZE / 2,
-    y: unit.position.tileY * TILE_SIZE + TILE_SIZE / 2
+    y: unit.position.tileY * TILE_SIZE + TILE_SIZE / 2,
   };
 
   // Create menu container
-  const actionMenu = scene.add.container(unitPixelPos.x + config.offsetX, unitPixelPos.y);
+  const actionMenu = scene.add.container(
+    unitPixelPos.x + config.offsetX,
+    unitPixelPos.y
+  );
   actionMenu.setDepth(100); // Above everything else
 
   // Create nineslice background using rpg-ui patch-1 slice
   // According to rpg-ui.json, patch-1 has center bounds of 32x32 within a 96x96 frame
   const menuBg = scene.add.nineslice(
-    0, 0, 
-    ATLAS_KEYS.RPG_UI, 
-    RPG_UI_FRAMES.PATCH_1, 
-    config.width, 
-    config.height, 
-    32, 32, 32, 32
+    0,
+    0,
+    ATLAS_KEYS.RPG_UI,
+    RPG_UI_FRAMES.PATCH_1,
+    config.width,
+    config.height,
+    32,
+    32,
+    32,
+    32
   );
   menuBg.setOrigin(0, 0.5);
   actionMenu.add(menuBg);
 
   // Add action buttons
-  const moveButton = scene.add.text(10, -config.buttonSpacing/2, 'Move', {
-    fontSize: '14px',
-    color: '#ffffff'
-  }).setOrigin(0, 0.5).setInteractive();
-  
-  const attackButton = scene.add.text(10, config.buttonSpacing/2, 'Attack', {
-    fontSize: '14px', 
-    color: '#ffffff'
-  }).setOrigin(0, 0.5).setInteractive();
+  // Align buttons to the top right, with a 40px margin in the top right
+  const buttonX = config.width - 40;
+  let currentY = -config.height / 2 + 40;
+
+  const moveButton = scene.add
+    .text(buttonX, currentY, "Move", {
+      fontSize: "14px",
+      color: BUTTON_COLOR,
+    })
+    .setOrigin(1, 0)
+    .setInteractive();
+
+  currentY += config.buttonSpacing;
+
+  const attackButton = scene.add
+    .text(buttonX, currentY, "Attack", {
+      fontSize: "14px",
+      color: BUTTON_COLOR,
+    })
+    .setOrigin(1, 0)
+    .setInteractive();
 
   // Add button interactions
-  moveButton.on('pointerdown', () => {
+  moveButton.on("pointerdown", () => {
     console.log(`${unit.name} - Move action selected`);
   });
 
-  attackButton.on('pointerdown', () => {
+  attackButton.on("pointerdown", () => {
     console.log(`${unit.name} - Attack action selected`);
   });
 
@@ -84,14 +105,18 @@ export function createActionMenu(
  * Add hover effects to a button
  */
 function addButtonHoverEffects(button: Phaser.GameObjects.Text): void {
-  button.on('pointerover', () => button.setTint(0xcccccc));
-  button.on('pointerout', () => button.clearTint());
+  button.on("pointerover", () => {
+    button.setColor("#ffffff");
+  });
+  button.on("pointerout", () => button.setColor(BUTTON_COLOR));
 }
 
 /**
  * Destroy action menu if it exists
  */
-export function destroyActionMenu(actionMenu: Phaser.GameObjects.Container | null): void {
+export function destroyActionMenu(
+  actionMenu: Phaser.GameObjects.Container | null
+): void {
   if (actionMenu) {
     actionMenu.destroy();
   }
