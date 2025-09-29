@@ -21,7 +21,23 @@ import {
   type UnitSelectionState,
   type UnitData
 } from "../systems/unitSelectionSystem";
-import { createActionMenu, destroyActionMenu } from "../systems/actionMenuSystem";
+import { 
+  createActionMenu, 
+  destroyActionMenu, 
+  updateMenuSelection,
+  getActionAtIndex,
+  type ActionMenuResult 
+} from "../systems/actionMenuSystem";
+import {
+  createMenuNavigationState,
+  activateMenuNavigation,
+  deactivateMenuNavigation,
+  moveMenuCursorUp,
+  moveMenuCursorDown,
+  getCurrentMenuIndex,
+  isMenuNavigationActive,
+  type MenuNavigationState
+} from "../systems/menuNavigationSystem";
 import { addHighlightEffect, removeHighlightEffect } from "../systems/unitHighlightSystem";
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
@@ -41,7 +57,9 @@ export class GameScene extends Phaser.Scene {
   private units: UnitData[] = [];
   // Track unit selection state
   private selectionState: UnitSelectionState = createUnitSelectionState();
-  private actionMenu: Phaser.GameObjects.Container | null = null;
+  private actionMenu: ActionMenuResult | null = null;
+  // Track menu navigation state
+  private menuNavigationState: MenuNavigationState = createMenuNavigationState(2); // 2 actions: Move, Attack
 
   constructor() {
     super("Game");
@@ -100,12 +118,44 @@ export class GameScene extends Phaser.Scene {
     
     // Subscribe to movement events
     this.inputController
-      .on('move:up', () => this.moveCursor(Direction.UP))
-      .on('move:down', () => this.moveCursor(Direction.DOWN))
-      .on('move:left', () => this.moveCursor(Direction.LEFT))
-      .on('move:right', () => this.moveCursor(Direction.RIGHT))
+      .on('move:up', () => this.handleMoveUp())
+      .on('move:down', () => this.handleMoveDown())
+      .on('move:left', () => this.handleMoveLeft())
+      .on('move:right', () => this.handleMoveRight())
       .on('confirm', () => this.handleConfirm())
       .on('cancel', () => this.handleCancel());
+  }
+
+  private handleMoveUp() {
+    if (isMenuNavigationActive(this.menuNavigationState)) {
+      this.menuNavigationState = moveMenuCursorUp(this.menuNavigationState);
+      this.updateMenuVisuals();
+    } else {
+      this.moveCursor(Direction.UP);
+    }
+  }
+
+  private handleMoveDown() {
+    if (isMenuNavigationActive(this.menuNavigationState)) {
+      this.menuNavigationState = moveMenuCursorDown(this.menuNavigationState);
+      this.updateMenuVisuals();
+    } else {
+      this.moveCursor(Direction.DOWN);
+    }
+  }
+
+  private handleMoveLeft() {
+    if (!isMenuNavigationActive(this.menuNavigationState)) {
+      this.moveCursor(Direction.LEFT);
+    }
+    // Left/right do nothing in menu navigation
+  }
+
+  private handleMoveRight() {
+    if (!isMenuNavigationActive(this.menuNavigationState)) {
+      this.moveCursor(Direction.RIGHT);
+    }
+    // Left/right do nothing in menu navigation
   }
 
   private moveCursor(direction: DirectionType) {
@@ -125,32 +175,40 @@ export class GameScene extends Phaser.Scene {
   }
 
   /**
-   * Handle confirm input - select unit or perform action
+   * Handle confirm input - select unit, navigate menu, or perform action
    */
   private handleConfirm(): void {
-    if (hasSelectedUnit(this.selectionState)) {
-      // Unit already selected - this would handle menu interactions in the future
-      return;
-    }
-
-    // Try to select unit at cursor
-    const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
-    if (unitAtCursor) {
-      this.selectUnitAtCursor(unitAtCursor);
+    if (isMenuNavigationActive(this.menuNavigationState)) {
+      // Menu is active - execute the selected action
+      this.executeSelectedAction();
+    } else if (hasSelectedUnit(this.selectionState)) {
+      // Unit is selected but menu not active - activate menu navigation
+      this.activateMenuNavigation();
+    } else {
+      // No unit selected - try to select unit at cursor
+      const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
+      if (unitAtCursor) {
+        this.selectUnitAtCursor(unitAtCursor);
+      }
     }
   }
 
   /**
-   * Handle cancel input - deselect unit and hide menu
+   * Handle cancel input - deselect unit, close menu, or go back to map
    */
   private handleCancel(): void {
-    if (hasSelectedUnit(this.selectionState)) {
+    if (isMenuNavigationActive(this.menuNavigationState)) {
+      // Menu is active - deactivate menu but keep unit selected
+      this.deactivateMenuNavigation();
+    } else if (hasSelectedUnit(this.selectionState)) {
+      // Unit is selected but menu not active - deselect unit completely
       this.deselectCurrentUnit();
     }
+    // If no unit selected, do nothing
   }
 
   /**
-   * Select a unit and show action menu
+   * Select a unit and show action menu (but don't activate navigation yet)
    */
   private selectUnitAtCursor(unitData: UnitData): void {
     this.selectionState = selectUnit(this.selectionState, unitData);
@@ -158,10 +216,63 @@ export class GameScene extends Phaser.Scene {
     // Add highlight effect
     addHighlightEffect(unitData.sprite);
     
-    // Show action menu with updated dimensions
+    // Show action menu but don't activate navigation yet
     this.actionMenu = createActionMenu(this, unitData.unit);
     
     console.log(`Selected unit: ${unitData.unit.name} (${unitData.unit.id})`);
+  }
+
+  /**
+   * Activate menu navigation and show visual indicators
+   */
+  private activateMenuNavigation(): void {
+    if (!this.actionMenu) return;
+    
+    this.menuNavigationState = activateMenuNavigation(this.menuNavigationState);
+    this.updateMenuVisuals();
+    
+    console.log("Menu navigation activated");
+  }
+
+  /**
+   * Deactivate menu navigation but keep menu visible
+   */
+  private deactivateMenuNavigation(): void {
+    this.menuNavigationState = deactivateMenuNavigation(this.menuNavigationState);
+    this.updateMenuVisuals();
+    
+    console.log("Menu navigation deactivated");
+  }
+
+  /**
+   * Update menu visual state based on current navigation
+   */
+  private updateMenuVisuals(): void {
+    if (!this.actionMenu) return;
+    
+    const selectedIndex = isMenuNavigationActive(this.menuNavigationState) 
+      ? getCurrentMenuIndex(this.menuNavigationState) 
+      : -1; // -1 means no selection visible
+      
+    updateMenuSelection(this.actionMenu, selectedIndex);
+  }
+
+  /**
+   * Execute the currently selected menu action
+   */
+  private executeSelectedAction(): void {
+    if (!this.actionMenu) return;
+    
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (!selectedUnit) return;
+    
+    const actionIndex = getCurrentMenuIndex(this.menuNavigationState);
+    const actionName = getActionAtIndex(this.actionMenu, actionIndex);
+    
+    console.log(`${selectedUnit.unit.name} - ${actionName} action selected`);
+    
+    // After executing action, deselect unit and hide menu
+    this.deselectCurrentUnit();
   }
 
   /**
@@ -175,8 +286,13 @@ export class GameScene extends Phaser.Scene {
     removeHighlightEffect(selectedUnit.sprite);
     
     // Hide action menu
-    destroyActionMenu(this.actionMenu);
-    this.actionMenu = null;
+    if (this.actionMenu) {
+      destroyActionMenu(this.actionMenu.container);
+      this.actionMenu = null;
+    }
+    
+    // Reset navigation state
+    this.menuNavigationState = deactivateMenuNavigation(this.menuNavigationState);
     
     // Update selection state
     this.selectionState = deselectUnit(this.selectionState);

@@ -3,7 +3,7 @@ import { TILE_SIZE } from "../util/tile";
 import { Unit } from "../components/Unit";
 
 /**
- * Action menu system - handles action menu UI creation and management
+ * Action menu system - handles action menu UI creation and management with keyboard navigation
  */
 
 export interface ActionMenuConfig {
@@ -21,15 +21,24 @@ export const DEFAULT_ACTION_MENU_CONFIG: ActionMenuConfig = {
 };
 
 const BUTTON_COLOR = "abcabc";
+const SELECTED_BUTTON_COLOR = "#ffffff";
+const CURSOR_INDICATOR = ">";
+
+export interface ActionMenuResult {
+  container: Phaser.GameObjects.Container;
+  actions: string[];
+  buttons: Phaser.GameObjects.Text[];
+  cursors: Phaser.GameObjects.Text[];
+}
 
 /**
- * Create action menu container with nineslice background and buttons
+ * Create action menu container with nineslice background and navigable buttons
  */
 export function createActionMenu(
   scene: Phaser.Scene,
   unit: Unit,
   config: ActionMenuConfig = DEFAULT_ACTION_MENU_CONFIG
-): Phaser.GameObjects.Container {
+): ActionMenuResult {
   // Calculate menu position (to the right of the unit)
   const unitPixelPos = {
     x: unit.position.tileX * TILE_SIZE + TILE_SIZE / 2,
@@ -44,7 +53,6 @@ export function createActionMenu(
   actionMenu.setDepth(100); // Above everything else
 
   // Create nineslice background using rpg-ui patch-1 slice
-  // According to rpg-ui.json, patch-1 has center bounds of 32x32 within a 96x96 frame
   const menuBg = scene.add.nineslice(
     0,
     0,
@@ -60,55 +68,73 @@ export function createActionMenu(
   menuBg.setOrigin(0, 0.5);
   actionMenu.add(menuBg);
 
-  // Add action buttons
-  // Align buttons to the top right, with a 40px margin in the top right
+  // Define menu actions
+  const actions = ["Move", "Attack"];
+  const buttons: Phaser.GameObjects.Text[] = [];
+  const cursors: Phaser.GameObjects.Text[] = [];
+
+  // Add action buttons and cursor indicators
   const buttonX = config.width - 40;
+  const cursorX = buttonX - 20; // Position cursor to the left of the button
   let currentY = -config.height / 2 + 40;
 
-  const moveButton = scene.add
-    .text(buttonX, currentY, "Move", {
-      fontSize: "14px",
-      color: BUTTON_COLOR,
-    })
-    .setOrigin(1, 0)
-    .setInteractive();
+  actions.forEach((action) => {
+    // Create cursor indicator
+    const cursor = scene.add
+      .text(cursorX, currentY, CURSOR_INDICATOR, {
+        fontSize: "14px",
+        color: BUTTON_COLOR,
+      })
+      .setOrigin(1, 0);
+    
+    // Create action button (no longer interactive via mouse)
+    const button = scene.add
+      .text(buttonX, currentY, action, {
+        fontSize: "14px",
+        color: BUTTON_COLOR,
+      })
+      .setOrigin(1, 0);
 
-  currentY += config.buttonSpacing;
+    buttons.push(button);
+    cursors.push(cursor);
+    actionMenu.add([cursor, button]);
 
-  const attackButton = scene.add
-    .text(buttonX, currentY, "Attack", {
-      fontSize: "14px",
-      color: BUTTON_COLOR,
-    })
-    .setOrigin(1, 0)
-    .setInteractive();
-
-  // Add button interactions
-  moveButton.on("pointerdown", () => {
-    console.log(`${unit.name} - Move action selected`);
+    currentY += config.buttonSpacing;
   });
 
-  attackButton.on("pointerdown", () => {
-    console.log(`${unit.name} - Attack action selected`);
-  });
-
-  // Add hover effects
-  addButtonHoverEffects(moveButton);
-  addButtonHoverEffects(attackButton);
-
-  actionMenu.add([moveButton, attackButton]);
-
-  return actionMenu;
+  return {
+    container: actionMenu,
+    actions,
+    buttons,
+    cursors
+  };
 }
 
 /**
- * Add hover effects to a button
+ * Update menu visual state based on current selection
  */
-function addButtonHoverEffects(button: Phaser.GameObjects.Text): void {
-  button.on("pointerover", () => {
-    button.setColor("#ffffff");
+export function updateMenuSelection(
+  menuResult: ActionMenuResult,
+  selectedIndex: number
+): void {
+  menuResult.buttons.forEach((button, index) => {
+    if (index === selectedIndex) {
+      button.setColor(SELECTED_BUTTON_COLOR);
+    } else {
+      button.setColor(BUTTON_COLOR);
+    }
   });
-  button.on("pointerout", () => button.setColor(BUTTON_COLOR));
+
+  menuResult.cursors.forEach((cursor, index) => {
+    cursor.setVisible(index === selectedIndex);
+  });
+}
+
+/**
+ * Get the action name for the given index
+ */
+export function getActionAtIndex(menuResult: ActionMenuResult, index: number): string {
+  return menuResult.actions[index] || "";
 }
 
 /**
