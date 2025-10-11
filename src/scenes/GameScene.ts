@@ -1,5 +1,8 @@
 import Phaser from "phaser";
-import { spawnUnitFromData, createPredefinedUnit } from "../entities/unitFactory";
+import {
+  spawnUnitFromData,
+  createPredefinedUnit,
+} from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import {
   createCursorVisual,
@@ -19,14 +22,14 @@ import {
   deselectUnit,
   getSelectedUnit,
   type UnitSelectionState,
-  type UnitData
+  type UnitData,
 } from "../systems/unitSelectionSystem";
-import { 
-  createActionMenu, 
-  destroyActionMenu, 
+import {
+  createActionMenu,
+  destroyActionMenu,
   updateMenuSelection,
   getActionAtIndex,
-  type ActionMenuResult 
+  type ActionMenuResult,
 } from "../systems/actionMenuSystem";
 import {
   createMenuNavigationState,
@@ -36,9 +39,12 @@ import {
   moveMenuCursorDown,
   getCurrentMenuIndex,
   isMenuNavigationActive,
-  type MenuNavigationState
+  type MenuNavigationState,
 } from "../systems/menuNavigationSystem";
-import { addHighlightEffect, removeHighlightEffect } from "../systems/unitHighlightSystem";
+import {
+  addHighlightEffect,
+  removeHighlightEffect,
+} from "../systems/unitHighlightSystem";
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
 import { InputController } from "../input/InputController";
@@ -59,7 +65,8 @@ export class GameScene extends Phaser.Scene {
   private selectionState: UnitSelectionState = createUnitSelectionState();
   private actionMenu: ActionMenuResult | null = null;
   // Track menu navigation state
-  private menuNavigationState: MenuNavigationState = createMenuNavigationState(2); // 2 actions: Move, Attack
+  private menuNavigationState: MenuNavigationState =
+    createMenuNavigationState(2); // 2 actions: Move, Attack
 
   constructor() {
     super("Game");
@@ -75,19 +82,19 @@ export class GameScene extends Phaser.Scene {
     const ACOLYTE_06_POS = { x: 5, y: 5 };
 
     // Create and spawn units using the new Unit system
-    const acolyte01 = createPredefinedUnit("ACOLYTE_01", "unit_001", { 
-      tileX: ACOLYTE_01_POS.x, 
-      tileY: ACOLYTE_01_POS.y 
+    const acolyte01 = createPredefinedUnit("ACOLYTE_01", "unit_001", {
+      tileX: ACOLYTE_01_POS.x,
+      tileY: ACOLYTE_01_POS.y,
     });
-    const acolyte06 = createPredefinedUnit("ACOLYTE_06", "unit_002", { 
-      tileX: ACOLYTE_06_POS.x, 
-      tileY: ACOLYTE_06_POS.y 
+    const acolyte06 = createPredefinedUnit("ACOLYTE_06", "unit_002", {
+      tileX: ACOLYTE_06_POS.x,
+      tileY: ACOLYTE_06_POS.y,
     });
 
     // Spawn the units and store their data
     const unit1Data = spawnUnitFromData(this, acolyte01);
     const unit2Data = spawnUnitFromData(this, acolyte06);
-    
+
     this.units.push(unit1Data, unit2Data);
 
     // Create cursor visual after the map is loaded
@@ -115,15 +122,15 @@ export class GameScene extends Phaser.Scene {
   private setupInput() {
     // Create InputController with default repeat settings
     this.inputController = new InputController(this);
-    
+
     // Subscribe to movement events
     this.inputController
-      .on('move:up', () => this.handleMoveUp())
-      .on('move:down', () => this.handleMoveDown())
-      .on('move:left', () => this.handleMoveLeft())
-      .on('move:right', () => this.handleMoveRight())
-      .on('confirm', () => this.handleConfirm())
-      .on('cancel', () => this.handleCancel());
+      .on("move:up", () => this.handleMoveUp())
+      .on("move:down", () => this.handleMoveDown())
+      .on("move:left", () => this.handleMoveLeft())
+      .on("move:right", () => this.handleMoveRight())
+      .on("confirm", () => this.handleConfirm())
+      .on("cancel", () => this.handleCancel());
   }
 
   private handleMoveUp() {
@@ -160,12 +167,8 @@ export class GameScene extends Phaser.Scene {
 
   private moveCursor(direction: DirectionType) {
     if (!this.cursorVisual) return;
-    
-    this.cursor = moveCursorWithBounds(
-      this.cursor,
-      direction,
-      this.mapBounds
-    );
+
+    this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
     updateCursorVisual(this.cursorVisual, this.cursor);
   }
 
@@ -182,13 +185,13 @@ export class GameScene extends Phaser.Scene {
       // Menu is active - execute the selected action
       this.executeSelectedAction();
     } else if (hasSelectedUnit(this.selectionState)) {
-      // Unit is selected but menu not active - activate menu navigation
-      this.activateMenuNavigation();
+      console.log("Unit already selected");
     } else {
       // No unit selected - try to select unit at cursor
       const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
       if (unitAtCursor) {
         this.selectUnitAtCursor(unitAtCursor);
+        this.activateMenuNavigation();
       }
     }
   }
@@ -212,13 +215,13 @@ export class GameScene extends Phaser.Scene {
    */
   private selectUnitAtCursor(unitData: UnitData): void {
     this.selectionState = selectUnit(this.selectionState, unitData);
-    
+
     // Add highlight effect
     addHighlightEffect(unitData.sprite);
-    
+
     // Show action menu but don't activate navigation yet
     this.actionMenu = createActionMenu(this, unitData.unit);
-    
+
     console.log(`Selected unit: ${unitData.unit.name} (${unitData.unit.id})`);
   }
 
@@ -227,10 +230,10 @@ export class GameScene extends Phaser.Scene {
    */
   private activateMenuNavigation(): void {
     if (!this.actionMenu) return;
-    
+
     this.menuNavigationState = activateMenuNavigation(this.menuNavigationState);
     this.updateMenuVisuals();
-    
+
     console.log("Menu navigation activated");
   }
 
@@ -238,9 +241,11 @@ export class GameScene extends Phaser.Scene {
    * Deactivate menu navigation but keep menu visible
    */
   private deactivateMenuNavigation(): void {
-    this.menuNavigationState = deactivateMenuNavigation(this.menuNavigationState);
+    this.menuNavigationState = deactivateMenuNavigation(
+      this.menuNavigationState
+    );
     this.updateMenuVisuals();
-    
+
     console.log("Menu navigation deactivated");
   }
 
@@ -249,11 +254,11 @@ export class GameScene extends Phaser.Scene {
    */
   private updateMenuVisuals(): void {
     if (!this.actionMenu) return;
-    
-    const selectedIndex = isMenuNavigationActive(this.menuNavigationState) 
-      ? getCurrentMenuIndex(this.menuNavigationState) 
+
+    const selectedIndex = isMenuNavigationActive(this.menuNavigationState)
+      ? getCurrentMenuIndex(this.menuNavigationState)
       : -1; // -1 means no selection visible
-      
+
     updateMenuSelection(this.actionMenu, selectedIndex);
   }
 
@@ -262,15 +267,15 @@ export class GameScene extends Phaser.Scene {
    */
   private executeSelectedAction(): void {
     if (!this.actionMenu) return;
-    
+
     const selectedUnit = getSelectedUnit(this.selectionState);
     if (!selectedUnit) return;
-    
+
     const actionIndex = getCurrentMenuIndex(this.menuNavigationState);
     const actionName = getActionAtIndex(this.actionMenu, actionIndex);
-    
+
     console.log(`${selectedUnit.unit.name} - ${actionName} action selected`);
-    
+
     // After executing action, deselect unit and hide menu
     this.deselectCurrentUnit();
   }
@@ -281,22 +286,24 @@ export class GameScene extends Phaser.Scene {
   private deselectCurrentUnit(): void {
     const selectedUnit = getSelectedUnit(this.selectionState);
     if (!selectedUnit) return;
-    
+
     // Remove highlight effect
     removeHighlightEffect(selectedUnit.sprite);
-    
+
     // Hide action menu
     if (this.actionMenu) {
       destroyActionMenu(this.actionMenu.container);
       this.actionMenu = null;
     }
-    
+
     // Reset navigation state
-    this.menuNavigationState = deactivateMenuNavigation(this.menuNavigationState);
-    
+    this.menuNavigationState = deactivateMenuNavigation(
+      this.menuNavigationState
+    );
+
     // Update selection state
     this.selectionState = deselectUnit(this.selectionState);
-    
+
     console.log(`Deselected unit: ${selectedUnit.unit.name}`);
   }
 
@@ -305,7 +312,7 @@ export class GameScene extends Phaser.Scene {
     if (hasSelectedUnit(this.selectionState)) {
       this.deselectCurrentUnit();
     }
-    
+
     // Clean up InputController
     this.inputController?.destroy();
     this.inputController = null;

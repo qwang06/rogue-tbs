@@ -75,18 +75,18 @@ export function createActionMenu(
 
   // Add action buttons and cursor indicators
   const buttonX = config.width - 40;
-  const cursorX = buttonX - 20; // Position cursor to the left of the button
+  const cursorGap = 8; // Space between cursor and button
   let currentY = -config.height / 2 + 40;
 
   actions.forEach((action) => {
     // Create cursor indicator
     const cursor = scene.add
-      .text(cursorX, currentY, CURSOR_INDICATOR, {
+      .text(0, currentY, CURSOR_INDICATOR, {
         fontSize: "14px",
         color: BUTTON_COLOR,
       })
       .setOrigin(1, 0);
-    
+
     // Create action button (no longer interactive via mouse)
     const button = scene.add
       .text(buttonX, currentY, action, {
@@ -94,6 +94,9 @@ export function createActionMenu(
         color: BUTTON_COLOR,
       })
       .setOrigin(1, 0);
+
+    // Position cursor to the left of the button, accounting for cursor width
+    cursor.x = buttonX - button.width - cursorGap;
 
     buttons.push(button);
     cursors.push(cursor);
@@ -106,7 +109,7 @@ export function createActionMenu(
     container: actionMenu,
     actions,
     buttons,
-    cursors
+    cursors,
   };
 }
 
@@ -133,7 +136,10 @@ export function updateMenuSelection(
 /**
  * Get the action name for the given index
  */
-export function getActionAtIndex(menuResult: ActionMenuResult, index: number): string {
+export function getActionAtIndex(
+  menuResult: ActionMenuResult,
+  index: number
+): string {
   return menuResult.actions[index] || "";
 }
 
