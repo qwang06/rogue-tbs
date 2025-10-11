@@ -170,13 +170,13 @@ export class GameScene extends Phaser.Scene {
       // Menu is active - emit confirm event to UI scene
       this.events.emit("menu-confirm");
     } else if (hasSelectedUnit(this.selectionState)) {
-      // Unit is selected - activate menu
-      this.activateMenuNavigation();
+      console.log("Unit already selected");
     } else {
       // No unit selected - try to select unit at cursor
       const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
       if (unitAtCursor) {
         this.selectUnitAtCursor(unitAtCursor);
+        this.activateMenuNavigation();
       }
     }
   }
