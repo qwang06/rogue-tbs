@@ -67,11 +67,11 @@ export interface Unit {
   /**
    * Current facing direction (for sprite selection)
    */
-  facing: 'front' | 'left' | 'right' | 'back';
+  facing: "front" | "left" | "right" | "back";
   /**
    * Current animation state
    */
-  animationState: 'idle' | 'move' | 'attack' | 'damaged';
+  animationState: "idle" | "move" | "attack" | "damaged";
   /**
    * Additional data for future expansion (spells, abilities, equipment, etc.)
    */
@@ -111,8 +111,8 @@ export function createUnit(
     position,
     stats: defaultStats,
     sprites,
-    facing: 'front',
-    animationState: 'idle',
+    facing: "front",
+    animationState: "idle",
     customData: {},
   };
 }
@@ -138,7 +138,7 @@ export function moveUnit(unit: Unit, tileX: number, tileY: number): Unit {
 /**
  * Helper function to change unit facing direction
  */
-export function setUnitFacing(unit: Unit, facing: Unit['facing']): Unit {
+export function setUnitFacing(unit: Unit, facing: Unit["facing"]): Unit {
   return {
     ...unit,
     facing,
@@ -148,7 +148,10 @@ export function setUnitFacing(unit: Unit, facing: Unit['facing']): Unit {
 /**
  * Helper function to change unit animation state
  */
-export function setUnitAnimationState(unit: Unit, animationState: Unit['animationState']): Unit {
+export function setUnitAnimationState(
+  unit: Unit,
+  animationState: Unit["animationState"]
+): Unit {
   return {
     ...unit,
     animationState,

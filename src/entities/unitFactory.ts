@@ -3,7 +3,11 @@ import { getTileCenter, TILE_SIZE } from "../util/tile";
 import { Unit, createUnit, getUnitFrameName } from "../components/Unit";
 import { createDirectionAnimationFrames } from "../util/spritesheet";
 import { UNIT_TYPES, UnitTypeKey } from "../config/unitTypes";
-import { DEFAULT_UNIT_ANIMATION_CONFIG, UNIT_DIRECTIONS, UNIT_ANIMATION_STATES } from "../config/animations";
+import {
+  DEFAULT_UNIT_ANIMATION_CONFIG,
+  UNIT_DIRECTIONS,
+  UNIT_ANIMATION_STATES,
+} from "../config/animations";
 import { TilePosition, SpawnUnitResult } from "../types/units";
 
 /**
@@ -56,8 +60,11 @@ export function spawnUnitFromData(
   unit: Unit
 ): SpawnUnitResult {
   const frameName = getUnitFrameName(unit);
-  const textureKey = unit.animationState === 'idle' ? unit.sprites.idleKey : unit.sprites.moveKey;
-  
+  const textureKey =
+    unit.animationState === "idle"
+      ? unit.sprites.idleKey
+      : unit.sprites.moveKey;
+
   const sprite = spawnUnit(
     scene,
     textureKey,
@@ -86,7 +93,7 @@ export function createPredefinedUnit(
   position: TilePosition
 ): Unit {
   const config = UNIT_TYPES[unitTypeKey];
-  
+
   return createUnit(
     id,
     config.name,
@@ -103,20 +110,21 @@ export function createPredefinedUnit(
  * @param unit The unit to create animations for
  */
 export function createUnitAnimations(scene: Phaser.Scene, unit: Unit): void {
-  UNIT_ANIMATION_STATES.forEach(state => {
-    const textureKey = state === 'idle' ? unit.sprites.idleKey : unit.sprites.moveKey;
-    
-    UNIT_DIRECTIONS.forEach(direction => {
+  UNIT_ANIMATION_STATES.forEach((state) => {
+    const textureKey =
+      state === "idle" ? unit.sprites.idleKey : unit.sprites.moveKey;
+
+    UNIT_DIRECTIONS.forEach((direction) => {
       const animationKey = `${unit.sprites.baseKey}_${state}_${direction}`;
-      
+
       // Only create animation if it doesn't already exist
       if (!scene.anims.exists(animationKey)) {
         const frames = createDirectionAnimationFrames(
-          textureKey, 
-          direction, 
+          textureKey,
+          direction,
           DEFAULT_UNIT_ANIMATION_CONFIG.framesPerDirection
         );
-        
+
         scene.anims.create({
           key: animationKey,
           frames: frames,
@@ -133,7 +141,10 @@ export function createUnitAnimations(scene: Phaser.Scene, unit: Unit): void {
  * @param sprite The sprite to play animation on
  * @param unit The unit data to determine which animation to play
  */
-export function playUnitAnimation(sprite: Phaser.GameObjects.Sprite, unit: Unit): void {
+export function playUnitAnimation(
+  sprite: Phaser.GameObjects.Sprite,
+  unit: Unit
+): void {
   const animationKey = `${unit.sprites.baseKey}_${unit.animationState}_${unit.facing}`;
   sprite.play(animationKey);
 }

@@ -20,7 +20,7 @@ export interface UnitSelectionState {
  */
 export function createUnitSelectionState(): UnitSelectionState {
   return {
-    selectedUnit: null
+    selectedUnit: null,
   };
 }
 
@@ -31,10 +31,13 @@ export function findUnitAtCursor(
   units: UnitData[],
   cursor: Cursor
 ): UnitData | null {
-  return units.find(unitData => 
-    unitData.unit.position.tileX === cursor.tileX &&
-    unitData.unit.position.tileY === cursor.tileY
-  ) || null;
+  return (
+    units.find(
+      (unitData) =>
+        unitData.unit.position.tileX === cursor.tileX &&
+        unitData.unit.position.tileY === cursor.tileY
+    ) || null
+  );
 }
 
 /**
@@ -53,7 +56,7 @@ export function selectUnit(
 ): UnitSelectionState {
   return {
     ...state,
-    selectedUnit: unitData
+    selectedUnit: unitData,
   };
 }
 
@@ -63,7 +66,7 @@ export function selectUnit(
 export function deselectUnit(state: UnitSelectionState): UnitSelectionState {
   return {
     ...state,
-    selectedUnit: null
+    selectedUnit: null,
   };
 }
 

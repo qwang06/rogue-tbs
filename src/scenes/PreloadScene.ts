@@ -1,11 +1,17 @@
 import { ATLAS_KEYS, FONT_KEYS, MAP_KEYS } from "../assets/keys";
-import { create4x4Frames, ACOLYTE_SPRITESHEET_CONFIG } from "../util/spritesheet";
+import {
+  create4x4Frames,
+  ACOLYTE_SPRITESHEET_CONFIG,
+} from "../util/spritesheet";
 
 // Type guard for customData with meta.slices
 type TextureWithMeta = Phaser.Textures.Texture & {
   customData?: {
     meta?: {
-      slices?: Array<{ name: string; keys: Array<{ bounds: { x: number; y: number; w: number; h: number } }> }>;
+      slices?: Array<{
+        name: string;
+        keys: Array<{ bounds: { x: number; y: number; w: number; h: number } }>;
+      }>;
     };
   };
 };
@@ -133,7 +139,7 @@ export class PreloadScene extends Phaser.Scene {
   create() {
     // Create custom frames from slices for rpg-ow atlas
     this.createFramesFromSlices();
-    
+
     // Create frames for Acolyte spritesheets
     this.createAcolyteFrames();
 
@@ -145,7 +151,10 @@ export class PreloadScene extends Phaser.Scene {
     const rpgOwTexture = this.textures.get(ATLAS_KEYS.RPG_OW);
     const rpgOwCustomData = (rpgOwTexture as TextureWithMeta).customData;
     const rpgOwSlices =
-      rpgOwCustomData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
+      rpgOwCustomData?.meta?.slices?.map((s: any) => ({
+        name: s.name,
+        ...s.keys[0].bounds,
+      })) ?? [];
 
     rpgOwSlices.forEach((slice) => {
       if (!rpgOwTexture.has(slice.name)) {
@@ -157,7 +166,10 @@ export class PreloadScene extends Phaser.Scene {
     const rpgUiTexture = this.textures.get(ATLAS_KEYS.RPG_UI);
     const rpgUiCustomData = (rpgUiTexture as TextureWithMeta).customData;
     const rpgUiSlices =
-      rpgUiCustomData?.meta?.slices?.map((s: any) => ({ name: s.name, ...s.keys[0].bounds })) ?? [];
+      rpgUiCustomData?.meta?.slices?.map((s: any) => ({
+        name: s.name,
+        ...s.keys[0].bounds,
+      })) ?? [];
 
     rpgUiSlices.forEach((slice) => {
       if (!rpgUiTexture.has(slice.name)) {
@@ -170,14 +182,14 @@ export class PreloadScene extends Phaser.Scene {
     // Create frames for Acolyte 01 spritesheets
     const acolyte01IdleTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_01_IDLE);
     const acolyte01MoveTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_01_MOVE);
-    
+
     create4x4Frames(acolyte01IdleTexture);
     create4x4Frames(acolyte01MoveTexture);
 
     // Create frames for Acolyte 06 spritesheets
     const acolyte06IdleTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_06_IDLE);
     const acolyte06MoveTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_06_MOVE);
-    
+
     create4x4Frames(acolyte06IdleTexture);
     create4x4Frames(acolyte06MoveTexture);
   }

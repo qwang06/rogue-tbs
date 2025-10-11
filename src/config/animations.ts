@@ -2,7 +2,11 @@
  * Animation configuration for units
  */
 
-import { UnitAnimationConfig, UnitDirection, UnitAnimationState } from "../types/units";
+import {
+  UnitAnimationConfig,
+  UnitDirection,
+  UnitAnimationState,
+} from "../types/units";
 
 /**
  * Default animation settings for units
@@ -16,9 +20,17 @@ export const DEFAULT_UNIT_ANIMATION_CONFIG: UnitAnimationConfig = {
 /**
  * Available directions for unit sprites
  */
-export const UNIT_DIRECTIONS: readonly UnitDirection[] = ['front', 'left', 'right', 'back'] as const;
+export const UNIT_DIRECTIONS: readonly UnitDirection[] = [
+  "front",
+  "left",
+  "right",
+  "back",
+] as const;
 
 /**
  * Available animation states for units
  */
-export const UNIT_ANIMATION_STATES: readonly UnitAnimationState[] = ['idle', 'move'] as const;
+export const UNIT_ANIMATION_STATES: readonly UnitAnimationState[] = [
+  "idle",
+  "move",
+] as const;
