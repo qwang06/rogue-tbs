@@ -132,6 +132,7 @@ describe("Unit Factory", () => {
 
       // ACOLYTE_01 should be more magic-focused
       expect(acolyte01.stats.magicAttack).toBeGreaterThan(
+        // @ts-ignore
         acolyte06.stats.magicAttack
       );
       expect(acolyte01.stats.mp).toBeGreaterThan(acolyte06.stats.mp);

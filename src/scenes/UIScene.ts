@@ -16,12 +16,23 @@ import {
   isMenuNavigationActive,
   type MenuNavigationState,
 } from "../systems/menuNavigationSystem";
+import {
+  createUnitInfoPanel,
+  updateUnitInfoPanel,
+  showUnitInfoPanel,
+  hideUnitInfoPanel,
+  destroyUnitInfoPanel,
+  type UnitInfoPanelResult,
+} from "../systems/unitInfoPanelSystem";
 import { Unit } from "../components/Unit";
 
 export class UIScene extends Phaser.Scene {
   private actionMenu: ActionMenuResult | null = null;
   private menuNavigationState: MenuNavigationState =
     createMenuNavigationState(2); // 2 actions: Move, Attack
+  private unitInfoPanel: UnitInfoPanelResult | null = null;
+  private hoveredUnit: Unit | null = null;
+  private selectedUnit: Unit | null = null;
 
   constructor() {
     super("UI");
@@ -33,10 +44,17 @@ export class UIScene extends Phaser.Scene {
     // Listen for unit selection events from GameScene
     gameScene.events.on("unit-selected", (unit: Unit) => {
       this.showActionMenuForUnit(unit);
+      this.handleUnitSelected(unit);
     });
 
     gameScene.events.on("unit-deselected", () => {
       this.hideActionMenu();
+      this.handleUnitDeselected();
+    });
+
+    // Listen for unit hover events from GameScene
+    gameScene.events.on("unit-hover", (unit: Unit | null) => {
+      this.handleUnitHover(unit);
     });
 
     // Listen for menu navigation events from GameScene
@@ -156,14 +174,65 @@ export class UIScene extends Phaser.Scene {
     updateMenuSelection(this.actionMenu, selectedIndex);
   }
 
+  /**
+   * Handle unit hover event - show info panel if not already shown for selected unit
+   */
+  private handleUnitHover(unit: Unit | null): void {
+    this.hoveredUnit = unit;
+    this.updateUnitInfoPanelVisibility();
+  }
+
+  /**
+   * Handle unit selected event - track selected unit for info panel
+   */
+  private handleUnitSelected(unit: Unit): void {
+    this.selectedUnit = unit;
+    this.updateUnitInfoPanelVisibility();
+  }
+
+  /**
+   * Handle unit deselected event - clear selected unit for info panel
+   */
+  private handleUnitDeselected(): void {
+    this.selectedUnit = null;
+    this.updateUnitInfoPanelVisibility();
+  }
+
+  /**
+   * Update unit info panel visibility based on hover and selection state
+   * Panel should be visible when unit is hovered or selected
+   */
+  private updateUnitInfoPanelVisibility(): void {
+    const displayUnit = this.selectedUnit || this.hoveredUnit;
+
+    if (displayUnit) {
+      if (this.unitInfoPanel) {
+        // Panel exists, update it
+        updateUnitInfoPanel(this.unitInfoPanel, displayUnit);
+        showUnitInfoPanel(this.unitInfoPanel);
+      } else {
+        // Create new panel
+        this.unitInfoPanel = createUnitInfoPanel(this, displayUnit);
+      }
+    } else {
+      // No unit to display, hide panel
+      if (this.unitInfoPanel) {
+        hideUnitInfoPanel(this.unitInfoPanel);
+      }
+    }
+  }
+
   shutdown() {
-    // Clean up menu
+    // Clean up menu and unit info panel
     this.hideActionMenu();
+    destroyUnitInfoPanel(this.unitInfoPanel);
+    this.unitInfoPanel = null;
 
     // Remove event listeners
     const gameScene = this.scene.get("Game");
     gameScene.events.off("unit-selected");
     gameScene.events.off("unit-deselected");
+    gameScene.events.off("unit-hover");
     gameScene.events.off("menu-navigate-up");
     gameScene.events.off("menu-navigate-down");
     gameScene.events.off("menu-activate");
