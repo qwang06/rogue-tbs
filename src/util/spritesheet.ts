@@ -46,7 +46,7 @@ export const SPRITESHEET_PRESETS = {
 } as const;
 
 /**
- * Direction mapping for 4x4 Acolyte spritesheets
+ * Direction mapping for 4x4 Acolyte spritesheets (row indices)
  */
 export const DIRECTION_ROWS = {
   front: 0,
@@ -54,6 +54,28 @@ export const DIRECTION_ROWS = {
   right: 2,
   back: 3,
 } as const;
+
+/**
+ * Converts a direction and frame column index to a numeric frame index for a 4x4 spritesheet.
+ * Phaser auto-generates frames left-to-right, top-to-bottom: 0-3 (row 0), 4-7 (row 1), etc.
+ *
+ * @param direction The direction (front, left, right, back)
+ * @param frameCol The column index within that direction's row (0-3)
+ * @param cols Number of columns in the spritesheet (default 4)
+ * @returns The numeric frame index (0-15 for a 4x4 grid)
+ *
+ * @example
+ * getFrameIndex('front', 0) // 0 (first frame of front row)
+ * getFrameIndex('left', 2)  // 6 (third frame of left row)
+ */
+export function getFrameIndex(
+  direction: keyof typeof DIRECTION_ROWS,
+  frameCol: number = 0,
+  cols: number = 4
+): number {
+  const row = DIRECTION_ROWS[direction];
+  return row * cols + frameCol;
+}
 
 /**
  * Common direction mappings for different spritesheet layouts
@@ -118,19 +140,6 @@ export function createSpritesheetFrames(
 }
 
 /**
- * Creates frame definitions for a 4x4 Acolyte spritesheet
- * @param texture The Phaser texture object
- * @param config Frame configuration (defaults to ACOLYTE_SPRITESHEET_CONFIG)
- * @deprecated Use createSpritesheetFrames for more flexibility
- */
-export function create4x4Frames(
-  texture: Phaser.Textures.Texture,
-  config: SpritesheetFrameConfig = ACOLYTE_SPRITESHEET_CONFIG
-): void {
-  createSpritesheetFrames(texture, config, DIRECTION_ROWS);
-}
-
-/**
  * Gets the appropriate frame name for a unit's current state
  * @param facing Direction the unit is facing
  * @param frameIndex Animation frame index (0-3)
@@ -144,23 +153,25 @@ export function getFrameName(
 }
 
 /**
- * Creates animation frames for a unit direction
+ * Creates animation frames for a unit direction using numeric frame indices
  * @param textureKey The texture key
  * @param direction The direction to create animation for
  * @param frameCount Number of frames in the animation (default 4)
+ * @param cols Number of columns in the spritesheet (default 4)
  * @returns Array of animation frame configs
  */
 export function createDirectionAnimationFrames(
   textureKey: string,
   direction: keyof typeof DIRECTION_ROWS,
-  frameCount: number = 4
+  frameCount: number = 4,
+  cols: number = 4
 ): Phaser.Types.Animations.AnimationFrame[] {
   const frames: Phaser.Types.Animations.AnimationFrame[] = [];
 
   for (let i = 0; i < frameCount; i++) {
     frames.push({
       key: textureKey,
-      frame: getFrameName(direction, i),
+      frame: getFrameIndex(direction, i, cols),
     });
   }
 

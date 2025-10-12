@@ -1,8 +1,4 @@
 import { ATLAS_KEYS, FONT_KEYS, MAP_KEYS } from "../assets/keys";
-import {
-  create4x4Frames,
-  ACOLYTE_SPRITESHEET_CONFIG,
-} from "../util/spritesheet";
 
 // Type guard for customData with meta.slices
 type TextureWithMeta = Phaser.Textures.Texture & {
@@ -69,21 +65,22 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private loadGameAssets() {
-    // Load Acolyte spritesheets (4x4 format)
+    // Load Acolyte spritesheets (4x4 format, 32x32 frames)
+    // Phaser will auto-generate numeric frames: 0-15 for a 4x4 grid
     this.load.spritesheet(
       ATLAS_KEYS.ACOLYTE_01_IDLE,
       "assets/sprites/Acolyte_01_Idle.png",
       {
-        frameWidth: ACOLYTE_SPRITESHEET_CONFIG.frameWidth,
-        frameHeight: ACOLYTE_SPRITESHEET_CONFIG.frameHeight,
+        frameWidth: 32,
+        frameHeight: 32,
       }
     );
     this.load.spritesheet(
       ATLAS_KEYS.ACOLYTE_01_MOVE,
       "assets/sprites/Acolyte_01_Move.png",
       {
-        frameWidth: ACOLYTE_SPRITESHEET_CONFIG.frameWidth,
-        frameHeight: ACOLYTE_SPRITESHEET_CONFIG.frameHeight,
+        frameWidth: 32,
+        frameHeight: 32,
       }
     );
     this.load.image(
@@ -95,22 +92,21 @@ export class PreloadScene extends Phaser.Scene {
       ATLAS_KEYS.ACOLYTE_06_IDLE,
       "assets/sprites/Acolyte_06_Idle.png",
       {
-        frameWidth: ACOLYTE_SPRITESHEET_CONFIG.frameWidth,
-        frameHeight: ACOLYTE_SPRITESHEET_CONFIG.frameHeight,
+        frameWidth: 32,
+        frameHeight: 32,
       }
     );
     this.load.spritesheet(
       ATLAS_KEYS.ACOLYTE_06_MOVE,
       "assets/sprites/Acolyte_06_Move.png",
       {
-        frameWidth: ACOLYTE_SPRITESHEET_CONFIG.frameWidth,
-        frameHeight: ACOLYTE_SPRITESHEET_CONFIG.frameHeight,
+        frameWidth: 32,
+        frameHeight: 32,
       }
     );
-    // Note: No Acolyte_06 portrait in the assets, using Acolyte_02 as mentioned in assets
     this.load.image(
       ATLAS_KEYS.ACOLYTE_06_PORTRAIT,
-      "assets/sprites/Acolyte_02_portrait.png"
+      "assets/sprites/Acolyte_06_portrait.png"
     );
 
     // Load RPG spritesheets
@@ -139,9 +135,6 @@ export class PreloadScene extends Phaser.Scene {
   create() {
     // Create custom frames from slices for rpg-ow atlas
     this.createFramesFromSlices();
-
-    // Create frames for Acolyte spritesheets
-    this.createAcolyteFrames();
 
     this.scene.start("Menu");
   }
@@ -176,21 +169,5 @@ export class PreloadScene extends Phaser.Scene {
         rpgUiTexture.add(slice.name, 0, slice.x, slice.y, slice.w, slice.h);
       }
     });
-  }
-
-  private createAcolyteFrames() {
-    // Create frames for Acolyte 01 spritesheets
-    const acolyte01IdleTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_01_IDLE);
-    const acolyte01MoveTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_01_MOVE);
-
-    create4x4Frames(acolyte01IdleTexture);
-    create4x4Frames(acolyte01MoveTexture);
-
-    // Create frames for Acolyte 06 spritesheets
-    const acolyte06IdleTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_06_IDLE);
-    const acolyte06MoveTexture = this.textures.get(ATLAS_KEYS.ACOLYTE_06_MOVE);
-
-    create4x4Frames(acolyte06IdleTexture);
-    create4x4Frames(acolyte06MoveTexture);
   }
 }

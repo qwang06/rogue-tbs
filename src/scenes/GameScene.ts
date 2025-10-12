@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {
   spawnUnitFromData,
   createPredefinedUnit,
+  playUnitAnimation,
 } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import {
@@ -421,12 +422,7 @@ export class GameScene extends Phaser.Scene {
     unitData.unit = setUnitFacing(unitData.unit, facing);
     unitData.unit = setUnitAnimationState(unitData.unit, "move");
     unitData.unit = moveUnit(unitData.unit, nextTile.tileX, nextTile.tileY);
-
-    // Play move animation
-    const animKey = `${unitData.unit.sprites.baseKey}-move-${facing}`;
-    if (unitData.sprite.anims.exists(animKey)) {
-      unitData.sprite.play(animKey);
-    }
+    playUnitAnimation(unitData.sprite, unitData.unit);
 
     // Animate sprite to new position
     const { x, y } = getTileCenter(nextTile.tileX, nextTile.tileY);
@@ -453,10 +449,7 @@ export class GameScene extends Phaser.Scene {
     if (selectedUnit) {
       // Set unit back to idle
       selectedUnit.unit = setUnitAnimationState(selectedUnit.unit, "idle");
-      const animKey = `${selectedUnit.unit.sprites.baseKey}-idle-${selectedUnit.unit.facing}`;
-      if (selectedUnit.sprite.anims.exists(animKey)) {
-        selectedUnit.sprite.play(animKey);
-      }
+      playUnitAnimation(selectedUnit.sprite, selectedUnit.unit);
     }
 
     // Clear movement highlights and exit movement mode

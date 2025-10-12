@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { getTileCenter, TILE_SIZE } from "../util/tile";
-import { Unit, createUnit, getUnitFrameName } from "../components/Unit";
+import { Unit, createUnit, getUnitFrameIndex } from "../components/Unit";
 import { createDirectionAnimationFrames } from "../util/spritesheet";
 import { UNIT_TYPES, UnitTypeKey } from "../config/unitTypes";
 import {
@@ -15,7 +15,7 @@ import { TilePosition, SpawnUnitResult } from "../types/units";
  *
  * @param scene - The Phaser scene to add the sprite to
  * @param key - The texture key for the sprite
- * @param frame - The frame key within the texture
+ * @param frame - The frame key or numeric index within the texture
  * @param tileX - The tile X coordinate
  * @param tileY - The tile Y coordinate
  * @returns The created sprite positioned and scaled for the tile grid
@@ -23,7 +23,7 @@ import { TilePosition, SpawnUnitResult } from "../types/units";
 export function spawnUnit(
   scene: Phaser.Scene,
   key: string,
-  frame: string,
+  frame: string | number,
   tileX: number,
   tileY: number
 ): Phaser.GameObjects.Sprite {
@@ -59,7 +59,7 @@ export function spawnUnitFromData(
   scene: Phaser.Scene,
   unit: Unit
 ): SpawnUnitResult {
-  const frameName = getUnitFrameName(unit);
+  const frameIndex = getUnitFrameIndex(unit);
   const textureKey =
     unit.animationState === "idle"
       ? unit.sprites.idleKey
@@ -68,7 +68,7 @@ export function spawnUnitFromData(
   const sprite = spawnUnit(
     scene,
     textureKey,
-    frameName,
+    frameIndex,
     unit.position.tileX,
     unit.position.tileY
   );

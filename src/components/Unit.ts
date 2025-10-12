@@ -118,11 +118,27 @@ export function createUnit(
 }
 
 /**
- * Helper function to get the current frame name based on unit state
- * Format: direction_frame (e.g., "front_0", "left_1")
+ * Helper function to get the current frame index based on unit state
+ * For a 4x4 spritesheet: front (0-3), left (4-7), right (8-11), back (12-15)
+ * @param unit The unit instance
+ * @param frameCol The column index within the direction's row (0-3, default 0)
+ * @param cols Number of columns in the spritesheet (default 4)
+ * @returns Numeric frame index for Phaser spritesheet
  */
-export function getUnitFrameName(unit: Unit, frameIndex: number = 0): string {
-  return `${unit.facing}_${frameIndex}`;
+export function getUnitFrameIndex(
+  unit: Unit,
+  frameCol: number = 0,
+  cols: number = 4
+): number {
+  const directionRows: Record<Unit["facing"], number> = {
+    front: 0,
+    left: 1,
+    right: 2,
+    back: 3,
+  };
+
+  const row = directionRows[unit.facing];
+  return row * cols + frameCol;
 }
 
 /**
