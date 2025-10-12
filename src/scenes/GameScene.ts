@@ -33,6 +33,7 @@ import {
 import {
   createTileHighlightMap,
   addMovementHighlight,
+  addAttackHighlight,
   clearAllHighlights,
   type TileHighlightMap,
 } from "../systems/tileHighlightSystem";
@@ -45,6 +46,16 @@ import {
   generateMovementPath,
   type MovementState,
 } from "../systems/movementSystem";
+import {
+  createAttackState,
+  enterAttackMode,
+  exitAttackMode,
+  isAttackActive,
+  isTileAttackable,
+  calculateDamage,
+  applyDamage,
+  type AttackState,
+} from "../systems/attackSystem";
 import {
   moveUnit,
   setUnitFacing,
@@ -73,6 +84,8 @@ export class GameScene extends Phaser.Scene {
   private isMenuActive = false;
   // Track movement state
   private movementState: MovementState = createMovementState();
+  // Track attack state
+  private attackState: AttackState = createAttackState();
   // Track tile highlights for movement range
   private tileHighlights: TileHighlightMap = createTileHighlightMap();
   // Track if unit is currently moving
@@ -214,7 +227,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    if (isMovementActive(this.movementState)) {
+    if (isAttackActive(this.attackState)) {
+      // Attack mode is active - try to attack target at cursor position
+      this.handleAttackConfirm();
+    } else if (isMovementActive(this.movementState)) {
       // Movement mode is active - try to move unit to cursor position
       this.handleMovementConfirm();
     } else if (this.isMenuActive) {
@@ -241,7 +257,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    if (isMovementActive(this.movementState)) {
+    if (isAttackActive(this.attackState)) {
+      // Attack mode is active - exit attack mode
+      this.exitAttackModeAndDeselectUnit();
+    } else if (isMovementActive(this.movementState)) {
       // Movement mode is active - exit movement mode
       this.exitMovementModeAndDeselectUnit();
     } else if (this.isMenuActive) {
@@ -301,6 +320,8 @@ export class GameScene extends Phaser.Scene {
     // Handle action based on name
     if (actionName === "Move") {
       this.enterMovementModeForSelectedUnit();
+    } else if (actionName === "Attack") {
+      this.enterAttackModeForSelectedUnit();
     } else {
       // Other actions - for now, just deselect
       this.deselectCurrentUnit();
@@ -469,6 +490,78 @@ export class GameScene extends Phaser.Scene {
     // Clear movement highlights and exit movement mode
     clearAllHighlights(this.tileHighlights);
     this.movementState = exitMovementMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Enter attack mode for the currently selected unit
+   */
+  private enterAttackModeForSelectedUnit(): void {
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (!selectedUnit) return;
+
+    // Enter attack mode with range 1 (basic attack)
+    this.attackState = enterAttackMode(
+      this.attackState,
+      selectedUnit.unit,
+      this.mapBounds,
+      1 // attack range
+    );
+
+    // Highlight all attackable tiles in red
+    this.attackState.attackableTiles.forEach((tile) => {
+      addAttackHighlight(this, this.tileHighlights, tile.tileX, tile.tileY);
+    });
+  }
+
+  /**
+   * Exit attack mode and deselect unit
+   */
+  private exitAttackModeAndDeselectUnit(): void {
+    // Clear attack highlights
+    clearAllHighlights(this.tileHighlights);
+
+    // Exit attack mode
+    this.attackState = exitAttackMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Handle confirm during attack mode - attack target at cursor position
+   */
+  private handleAttackConfirm(): void {
+    // Check if cursor is on an attackable tile
+    if (!isTileAttackable(this.attackState, this.cursor)) {
+      return;
+    }
+
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (!selectedUnit) return;
+
+    // Check if there is a unit at the cursor position
+    const targetUnit = findUnitAtCursor(this.units, this.cursor);
+    if (!targetUnit) {
+      // No unit at target position - do nothing
+      return;
+    }
+
+    // Calculate damage
+    const damage = calculateDamage(selectedUnit.unit, targetUnit.unit);
+
+    // Apply damage to target
+    targetUnit.unit = applyDamage(targetUnit.unit, damage);
+
+    console.log(
+      `${selectedUnit.unit.name} attacked ${targetUnit.unit.name} for ${damage} damage. HP: ${targetUnit.unit.stats.hp}/${targetUnit.unit.stats.maxHp}`
+    );
+
+    // Clear attack highlights and exit attack mode
+    clearAllHighlights(this.tileHighlights);
+    this.attackState = exitAttackMode();
 
     // Deselect unit
     this.deselectCurrentUnit();
