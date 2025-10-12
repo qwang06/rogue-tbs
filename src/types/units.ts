@@ -41,12 +41,12 @@ export interface UnitAnimationConfig {
 /**
  * Direction types for unit sprites
  */
-export type UnitDirection = 'front' | 'left' | 'right' | 'back';
+export type UnitDirection = "front" | "left" | "right" | "back";
 
 /**
  * Animation state types for units
  */
-export type UnitAnimationState = 'idle' | 'move';
+export type UnitAnimationState = "idle" | "move";
 
 /**
  * Result type for spawning units

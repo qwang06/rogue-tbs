@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {
   spawnUnitFromData,
   createPredefinedUnit,
+  playUnitAnimation,
 } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import {
@@ -29,9 +30,30 @@ import {
   addHighlightEffect,
   removeHighlightEffect,
 } from "../systems/unitHighlightSystem";
+import {
+  createTileHighlightMap,
+  addMovementHighlight,
+  clearAllHighlights,
+  type TileHighlightMap,
+} from "../systems/tileHighlightSystem";
+import {
+  createMovementState,
+  enterMovementMode,
+  exitMovementMode,
+  isMovementActive,
+  isTileReachable,
+  generateMovementPath,
+  type MovementState,
+} from "../systems/movementSystem";
+import {
+  moveUnit,
+  setUnitFacing,
+  setUnitAnimationState,
+} from "../components/Unit";
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
 import { InputController } from "../input/InputController";
+import { getTileCenter } from "../util/tile";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
@@ -49,6 +71,12 @@ export class GameScene extends Phaser.Scene {
   private selectionState: UnitSelectionState = createUnitSelectionState();
   // Track whether menu is currently active
   private isMenuActive = false;
+  // Track movement state
+  private movementState: MovementState = createMovementState();
+  // Track tile highlights for movement range
+  private tileHighlights: TileHighlightMap = createTileHighlightMap();
+  // Track if unit is currently moving
+  private isUnitMoving = false;
 
   constructor() {
     super("Game");
@@ -152,6 +180,7 @@ export class GameScene extends Phaser.Scene {
 
   private moveCursor(direction: DirectionType) {
     if (!this.cursorVisual) return;
+    if (this.isUnitMoving) return; // Don't move cursor while unit is moving
 
     this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
     updateCursorVisual(this.cursorVisual, this.cursor);
@@ -166,7 +195,15 @@ export class GameScene extends Phaser.Scene {
    * Handle confirm input - select unit, navigate menu, or perform action
    */
   private handleConfirm(): void {
-    if (this.isMenuActive) {
+    if (this.isUnitMoving) {
+      // Unit is moving - ignore input
+      return;
+    }
+
+    if (isMovementActive(this.movementState)) {
+      // Movement mode is active - try to move unit to cursor position
+      this.handleMovementConfirm();
+    } else if (this.isMenuActive) {
       // Menu is active - emit confirm event to UI scene
       this.events.emit("menu-confirm");
     } else if (hasSelectedUnit(this.selectionState)) {
@@ -185,7 +222,15 @@ export class GameScene extends Phaser.Scene {
    * Handle cancel input - deselect unit, close menu, or go back to map
    */
   private handleCancel(): void {
-    if (this.isMenuActive) {
+    if (this.isUnitMoving) {
+      // Unit is moving - ignore input
+      return;
+    }
+
+    if (isMovementActive(this.movementState)) {
+      // Movement mode is active - exit movement mode
+      this.exitMovementModeAndDeselectUnit();
+    } else if (this.isMenuActive) {
       // Menu is active - deactivate menu but keep unit selected
       this.deactivateMenuNavigation();
     } else if (hasSelectedUnit(this.selectionState)) {
@@ -227,18 +272,25 @@ export class GameScene extends Phaser.Scene {
   /**
    * Handle menu action selected from UI scene
    */
-  private handleMenuActionSelected(_actionName: string): void {
+  private handleMenuActionSelected(actionName: string): void {
     const selectedUnit = getSelectedUnit(this.selectionState);
     if (!selectedUnit) return;
 
-    // TODO: Execute action based on _actionName
-    // For now, just deselect the unit after action is selected
     console.log(
-      `Action "${_actionName}" selected for unit ${selectedUnit.unit.id}`
+      `Action "${actionName}" selected for unit ${selectedUnit.unit.id}`
     );
 
-    // After executing action, deselect unit
-    this.deselectCurrentUnit();
+    // Close the menu
+    this.events.emit("unit-deselected");
+    this.isMenuActive = false;
+
+    // Handle action based on name
+    if (actionName === "Move") {
+      this.enterMovementModeForSelectedUnit();
+    } else {
+      // Other actions - for now, just deselect
+      this.deselectCurrentUnit();
+    }
   }
 
   /**
@@ -261,7 +313,157 @@ export class GameScene extends Phaser.Scene {
     this.selectionState = deselectUnit(this.selectionState);
   }
 
+  /**
+   * Enter movement mode for the currently selected unit
+   */
+  private enterMovementModeForSelectedUnit(): void {
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (!selectedUnit) return;
+
+    // Enter movement mode
+    this.movementState = enterMovementMode(
+      this.movementState,
+      selectedUnit.unit,
+      this.mapBounds,
+      5 // movement range
+    );
+
+    // Highlight all reachable tiles
+    this.movementState.reachableTiles.forEach((tile) => {
+      addMovementHighlight(this, this.tileHighlights, tile.tileX, tile.tileY);
+    });
+  }
+
+  /**
+   * Exit movement mode and deselect unit
+   */
+  private exitMovementModeAndDeselectUnit(): void {
+    // Clear movement highlights
+    clearAllHighlights(this.tileHighlights);
+
+    // Exit movement mode
+    this.movementState = exitMovementMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Handle confirm during movement mode - move unit to cursor position
+   */
+  private handleMovementConfirm(): void {
+    // Check if cursor is on a reachable tile
+    if (!isTileReachable(this.movementState, this.cursor)) {
+      return;
+    }
+
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (!selectedUnit) return;
+
+    // Generate path to destination
+    const path = generateMovementPath(
+      selectedUnit.unit.position.tileX,
+      selectedUnit.unit.position.tileY,
+      this.cursor.tileX,
+      this.cursor.tileY
+    );
+
+    // Start unit movement animation
+    this.animateUnitMovement(selectedUnit, path);
+  }
+
+  /**
+   * Animate unit movement along a path
+   */
+  private animateUnitMovement(
+    unitData: UnitData,
+    path: Array<{ tileX: number; tileY: number }>
+  ): void {
+    if (path.length === 0) {
+      this.onUnitMovementComplete();
+      return;
+    }
+
+    this.isUnitMoving = true;
+
+    // Move one step at a time
+    this.moveUnitOneStep(unitData, path, 0);
+  }
+
+  /**
+   * Move unit one step along the path
+   */
+  private moveUnitOneStep(
+    unitData: UnitData,
+    path: Array<{ tileX: number; tileY: number }>,
+    stepIndex: number
+  ): void {
+    if (stepIndex >= path.length) {
+      this.onUnitMovementComplete();
+      return;
+    }
+
+    const nextTile = path[stepIndex];
+    const currentTile = unitData.unit.position;
+
+    // Determine facing direction
+    let facing: "front" | "left" | "right" | "back" = "front";
+    if (nextTile.tileX > currentTile.tileX) {
+      facing = "right";
+    } else if (nextTile.tileX < currentTile.tileX) {
+      facing = "left";
+    } else if (nextTile.tileY > currentTile.tileY) {
+      facing = "front";
+    } else if (nextTile.tileY < currentTile.tileY) {
+      facing = "back";
+    }
+
+    // Update unit data
+    unitData.unit = setUnitFacing(unitData.unit, facing);
+    unitData.unit = setUnitAnimationState(unitData.unit, "move");
+    unitData.unit = moveUnit(unitData.unit, nextTile.tileX, nextTile.tileY);
+    playUnitAnimation(unitData.sprite, unitData.unit);
+
+    // Animate sprite to new position
+    const { x, y } = getTileCenter(nextTile.tileX, nextTile.tileY);
+    this.tweens.add({
+      targets: unitData.sprite,
+      x,
+      y,
+      duration: 200, // 200ms per tile
+      ease: "Linear",
+      onComplete: () => {
+        // Move to next step
+        this.moveUnitOneStep(unitData, path, stepIndex + 1);
+      },
+    });
+  }
+
+  /**
+   * Called when unit movement is complete
+   */
+  private onUnitMovementComplete(): void {
+    this.isUnitMoving = false;
+
+    const selectedUnit = getSelectedUnit(this.selectionState);
+    if (selectedUnit) {
+      // Set unit back to idle
+      selectedUnit.unit = setUnitAnimationState(selectedUnit.unit, "idle");
+      playUnitAnimation(selectedUnit.sprite, selectedUnit.unit);
+    }
+
+    // Clear movement highlights and exit movement mode
+    clearAllHighlights(this.tileHighlights);
+    this.movementState = exitMovementMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
   shutdown() {
+    // Clean up movement highlights
+    clearAllHighlights(this.tileHighlights);
+
     // Clean up selection state
     if (hasSelectedUnit(this.selectionState)) {
       this.deselectCurrentUnit();

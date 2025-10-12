@@ -34,15 +34,15 @@ export class MenuScene extends Phaser.Scene {
   private setupInput() {
     // Create InputController
     this.inputController = new InputController(this);
-    
+
     // Listen for confirm event to start the game
-    this.inputController.on('confirm', () => {
+    this.inputController.on("confirm", () => {
       this.scene.start("Game");
     });
   }
 
   update(_time: number, delta: number) {
-    // Update InputController 
+    // Update InputController
     this.inputController?.update(delta);
   }
 
