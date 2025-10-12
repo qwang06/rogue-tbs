@@ -116,6 +116,9 @@ export class GameScene extends Phaser.Scene {
     this.events.on("menu-action-selected", (actionName: string) => {
       this.handleMenuActionSelected(actionName);
     });
+
+    // Emit initial hover event for cursor position
+    this.emitUnitHoverEvent();
   }
 
   private setupCamera() {
@@ -184,6 +187,17 @@ export class GameScene extends Phaser.Scene {
 
     this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
     updateCursorVisual(this.cursorVisual, this.cursor);
+
+    // Emit hover event for unit at cursor position
+    this.emitUnitHoverEvent();
+  }
+
+  /**
+   * Emit hover event for unit at current cursor position
+   */
+  private emitUnitHoverEvent(): void {
+    const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
+    this.events.emit("unit-hover", unitAtCursor ? unitAtCursor.unit : null);
   }
 
   update(_time: number, delta: number) {
