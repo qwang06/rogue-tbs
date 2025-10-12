@@ -6,17 +6,17 @@ import { Unit } from "../components/Unit";
  */
 
 /**
- * Format HP value for display (e.g., "194/194")
+ * Format HP value for display (e.g., "194 194")
  */
 export function formatHpValue(unit: Unit): string {
-  return `${unit.stats.hp}/${unit.stats.maxHp}`;
+  return `${unit.stats.hp} ${unit.stats.maxHp}`;
 }
 
 /**
- * Format MP value for display (e.g., "33/33")
+ * Format MP value for display (e.g., "33 33")
  */
 export function formatMpValue(unit: Unit): string {
-  return `${unit.stats.mp}/${unit.stats.maxMp}`;
+  return `${unit.stats.mp} ${unit.stats.maxMp}`;
 }
 
 /**
