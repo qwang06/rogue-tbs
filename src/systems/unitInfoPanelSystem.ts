@@ -32,7 +32,7 @@ export const DEFAULT_UNIT_INFO_PANEL_CONFIG: UnitInfoPanelConfig = {
 
 const FONT_SIZE = 10;
 const TEXT_COLOR = 0x121212;
-const LABEL_COLOR = 0xaaaaaa;
+const LABEL_COLOR = 0x333333;
 const HP_BAR_COLOR = 0x3cc13b; // Green for HP
 const HP_BAR_LOW_COLOR = 0xf13c20; // Red for low HP
 const MP_BAR_COLOR = 0x00bfff; // Blue for MP
