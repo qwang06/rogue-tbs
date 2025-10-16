@@ -77,6 +77,11 @@ export class UIScene extends Phaser.Scene {
     gameScene.events.on("menu-confirm", () => {
       this.handleMenuConfirm();
     });
+
+    // Listen for unit damage events from GameScene
+    gameScene.events.on("unit-damaged", (unit: Unit) => {
+      this.handleUnitDamaged(unit);
+    });
   }
 
   /**
@@ -175,6 +180,24 @@ export class UIScene extends Phaser.Scene {
   }
 
   /**
+   * Handle unit taking damage - update info panel if it's being displayed
+   */
+  private handleUnitDamaged(unit: Unit): void {
+    // If the damaged unit is currently hovered, update the info panel
+    if (this.hoveredUnit && this.hoveredUnit.id === unit.id) {
+      this.hoveredUnit = unit;
+      if (this.unitInfoPanel) {
+        updateUnitInfoPanel(this.unitInfoPanel, unit);
+      }
+    }
+
+    // If the damaged unit is currently selected, update it as well
+    if (this.selectedUnit && this.selectedUnit.id === unit.id) {
+      this.selectedUnit = unit;
+    }
+  }
+
+  /**
    * Handle unit hover event - show info panel if not already shown for selected unit
    */
   private handleUnitHover(unit: Unit | null): void {
@@ -238,5 +261,6 @@ export class UIScene extends Phaser.Scene {
     gameScene.events.off("menu-activate");
     gameScene.events.off("menu-deactivate");
     gameScene.events.off("menu-confirm");
+    gameScene.events.off("unit-damaged");
   }
 }

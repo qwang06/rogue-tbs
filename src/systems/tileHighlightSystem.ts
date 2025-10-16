@@ -7,6 +7,8 @@ import { getTileCenter, TILE_SIZE } from "../util/tile";
 
 export const MOVEMENT_HIGHLIGHT_TINT = 0x6666ff; // Blue highlight for movement
 export const MOVEMENT_HIGHLIGHT_ALPHA = 0.4;
+export const ATTACK_HIGHLIGHT_TINT = 0xff6666; // Red highlight for attack
+export const ATTACK_HIGHLIGHT_ALPHA = 0.4;
 
 /**
  * Map of tile coordinates to highlight sprites
@@ -99,4 +101,35 @@ export function isTileHighlighted(
 ): boolean {
   const key = getTileKey(tileX, tileY);
   return highlightMap.highlights.has(key);
+}
+
+/**
+ * Add an attack highlight to a tile
+ */
+export function addAttackHighlight(
+  scene: Phaser.Scene,
+  highlightMap: TileHighlightMap,
+  tileX: number,
+  tileY: number
+): void {
+  const key = getTileKey(tileX, tileY);
+
+  // Don't add if already exists
+  if (highlightMap.highlights.has(key)) {
+    return;
+  }
+
+  const { x, y } = getTileCenter(tileX, tileY);
+
+  const highlight = scene.add.rectangle(
+    x,
+    y,
+    TILE_SIZE,
+    TILE_SIZE,
+    ATTACK_HIGHLIGHT_TINT,
+    ATTACK_HIGHLIGHT_ALPHA
+  );
+  highlight.setDepth(5); // Above tiles, below cursor and units
+
+  highlightMap.highlights.set(key, highlight);
 }
