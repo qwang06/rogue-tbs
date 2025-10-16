@@ -310,7 +310,7 @@ export class InputController {
   /**
    * Subscribe to an event
    */
-  // eslint-disable-next-line no-unused-vars
+   
   on(event: string, callback: (...args: unknown[]) => void): this {
     this.emitter.on(event, callback);
     return this;
@@ -319,7 +319,7 @@ export class InputController {
   /**
    * Unsubscribe from an event
    */
-  // eslint-disable-next-line no-unused-vars
+   
   off(event: string, callback: (...args: unknown[]) => void): this {
     this.emitter.off(event, callback);
     return this;
