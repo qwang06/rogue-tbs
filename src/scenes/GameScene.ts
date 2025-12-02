@@ -4,34 +4,38 @@ import {
   createPredefinedUnit,
 } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
+import { createCursorVisual } from "../entities/cursorFactory";
+import type { MapBounds } from "../systems/cursorSystem";
 import {
-  createCursorVisual,
-  updateCursorVisual,
-} from "../entities/cursorFactory";
-import {
-  Direction,
-  moveCursorWithBounds,
-  type MapBounds,
-  type DirectionType,
-} from "../systems/cursorSystem";
-import {
-  createUnitSelectionState,
   findUnitAtCursor,
-  hasSelectedUnit,
-  selectUnit,
-  deselectUnit,
-  getSelectedUnit,
-  type UnitSelectionState,
   type UnitData,
 } from "../systems/unitSelectionSystem";
-
 import {
   addHighlightEffect,
   removeHighlightEffect,
 } from "../systems/unitHighlightSystem";
+import {
+  addMovementHighlight,
+  addAttackHighlight,
+} from "../systems/tileHighlightSystem";
+import {
+  isTileReachable,
+  generateMovementPath,
+} from "../systems/movementSystem";
+import {
+  isTileAttackable,
+  calculateDamage,
+  applyDamage,
+} from "../systems/attackSystem";
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
-import { InputController } from "../input/InputController";
+import { GameStateManager } from "./managers/GameStateManager";
+import { UnitAnimationController } from "./managers/UnitAnimationController";
+import {
+  GameInputHandler,
+  type InputHandlerCallbacks,
+} from "./managers/GameInputHandler";
+import { GameEventEmitter } from "./managers/GameEventEmitter";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
@@ -42,19 +46,23 @@ export class GameScene extends Phaser.Scene {
     maxX: 19, // Will be updated when map loads
     maxY: 19, // Will be updated when map loads
   };
-  private inputController: InputController | null = null;
-  // Store units and their sprites for future reference
-  private units: UnitData[] = [];
-  // Track unit selection state
-  private selectionState: UnitSelectionState = createUnitSelectionState();
-  // Track whether menu is currently active
-  private isMenuActive = false;
+
+  // Managers
+  private stateManager!: GameStateManager;
+  private animationController!: UnitAnimationController;
+  private inputHandler!: GameInputHandler;
+  private eventEmitter!: GameEventEmitter;
 
   constructor() {
     super("Game");
   }
 
   create() {
+    // Initialize managers
+    this.stateManager = new GameStateManager();
+    this.animationController = new UnitAnimationController(this);
+    this.eventEmitter = new GameEventEmitter(this.events);
+
     // Load the AI-generated map
     this.mapBounds = loadGeneratedMap(this, MAP_KEYS.GENERATED_MAP_1);
     this.setupCamera();
@@ -77,7 +85,8 @@ export class GameScene extends Phaser.Scene {
     const unit1Data = spawnUnitFromData(this, acolyte01);
     const unit2Data = spawnUnitFromData(this, acolyte06);
 
-    this.units.push(unit1Data, unit2Data);
+    this.stateManager.addUnit(unit1Data);
+    this.stateManager.addUnit(unit2Data);
 
     // Create cursor visual after the map is loaded
     this.setupCursor();
@@ -85,9 +94,12 @@ export class GameScene extends Phaser.Scene {
     this.scene.launch("UI");
 
     // Listen for menu action selected from UI scene
-    this.events.on("menu-action-selected", (actionName: string) => {
+    this.eventEmitter.onMenuActionSelected((actionName: string) => {
       this.handleMenuActionSelected(actionName);
     });
+
+    // Emit initial hover event for cursor position
+    this.emitUnitHoverEvent();
   }
 
   private setupCamera() {
@@ -107,73 +119,69 @@ export class GameScene extends Phaser.Scene {
   }
 
   private setupInput() {
-    // Create InputController with default repeat settings
-    this.inputController = new InputController(this);
+    const callbacks: InputHandlerCallbacks = {
+      onMenuNavigateUp: () => this.eventEmitter.emitMenuNavigateUp(),
+      onMenuNavigateDown: () => this.eventEmitter.emitMenuNavigateDown(),
+      onCursorMove: () => this.emitUnitHoverEvent(),
+      onConfirm: () => this.handleConfirm(),
+      onCancel: () => this.handleCancel(),
+    };
 
-    // Subscribe to movement events
-    this.inputController
-      .on("move:up", () => this.handleMoveUp())
-      .on("move:down", () => this.handleMoveDown())
-      .on("move:left", () => this.handleMoveLeft())
-      .on("move:right", () => this.handleMoveRight())
-      .on("confirm", () => this.handleConfirm())
-      .on("cancel", () => this.handleCancel());
+    this.inputHandler = new GameInputHandler(
+      this,
+      this.cursor,
+      this.cursorVisual!,
+      this.mapBounds,
+      () => this.stateManager.isMenuCurrentlyActive(),
+      () => this.stateManager.isUnitCurrentlyMoving(),
+      callbacks
+    );
   }
 
-  private handleMoveUp() {
-    if (this.isMenuActive) {
-      this.events.emit("menu-navigate-up");
-    } else {
-      this.moveCursor(Direction.UP);
-    }
-  }
-
-  private handleMoveDown() {
-    if (this.isMenuActive) {
-      this.events.emit("menu-navigate-down");
-    } else {
-      this.moveCursor(Direction.DOWN);
-    }
-  }
-
-  private handleMoveLeft() {
-    if (!this.isMenuActive) {
-      this.moveCursor(Direction.LEFT);
-    }
-    // Left/right do nothing in menu navigation
-  }
-
-  private handleMoveRight() {
-    if (!this.isMenuActive) {
-      this.moveCursor(Direction.RIGHT);
-    }
-    // Left/right do nothing in menu navigation
-  }
-
-  private moveCursor(direction: DirectionType) {
-    if (!this.cursorVisual) return;
-
-    this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
-    updateCursorVisual(this.cursorVisual, this.cursor);
+  /**
+   * Emit hover event for unit at current cursor position
+   */
+  private emitUnitHoverEvent(): void {
+    this.cursor = this.inputHandler.getCursor();
+    const unitAtCursor = findUnitAtCursor(
+      this.stateManager.getUnits(),
+      this.cursor
+    );
+    this.eventEmitter.emitUnitHover(unitAtCursor ? unitAtCursor.unit : null);
   }
 
   update(_time: number, delta: number) {
     // Update InputController to handle key repeat
-    this.inputController?.update(delta);
+    this.inputHandler.update(delta);
   }
 
   /**
    * Handle confirm input - select unit, navigate menu, or perform action
    */
   private handleConfirm(): void {
-    if (this.isMenuActive) {
+    if (this.stateManager.isUnitCurrentlyMoving()) {
+      // Unit is moving - ignore input
+      return;
+    }
+
+    if (this.stateManager.isInAttackMode()) {
+      // Attack mode is active - try to attack target at cursor position
+      this.handleAttackConfirm();
+    } else if (this.stateManager.isInMovementMode()) {
+      // Movement mode is active - try to move unit to cursor position
+      this.handleMovementConfirm();
+    } else if (this.stateManager.isMenuCurrentlyActive()) {
       // Menu is active - emit confirm event to UI scene
-      this.events.emit("menu-confirm");
-    } else if (hasSelectedUnit(this.selectionState)) {
+      this.eventEmitter.emitMenuConfirm();
+    } else if (this.stateManager.hasSelectedUnit()) {
       console.log("Unit already selected");
     } else {
       // No unit selected - try to select unit at cursor
-      const unitAtCursor = findUnitAtCursor(this.units, this.cursor);
+      this.cursor = this.inputHandler.getCursor();
+      const unitAtCursor = findUnitAtCursor(
+        this.stateManager.getUnits(),
+        this.cursor
+      );
       if (unitAtCursor) {
         this.selectUnitAtCursor(unitAtCursor);
         this.activateMenuNavigation();
@@ -185,10 +193,21 @@ export class GameScene extends Phaser.Scene {
    * Handle cancel input - deselect unit, close menu, or go back to map
    */
   private handleCancel(): void {
-    if (this.isMenuActive) {
+    if (this.stateManager.isUnitCurrentlyMoving()) {
+      // Unit is moving - ignore input
+      return;
+    }
+
+    if (this.stateManager.isInAttackMode()) {
+      // Attack mode is active - exit attack mode
+      this.exitAttackModeAndDeselectUnit();
+    } else if (this.stateManager.isInMovementMode()) {
+      // Movement mode is active - exit movement mode
+      this.exitMovementModeAndDeselectUnit();
+    } else if (this.stateManager.isMenuCurrentlyActive()) {
       // Menu is active - deactivate menu but keep unit selected
       this.deactivateMenuNavigation();
-    } else if (hasSelectedUnit(this.selectionState)) {
+    } else if (this.stateManager.hasSelectedUnit()) {
       // Unit is selected but menu not active - deselect unit completely
       this.deselectCurrentUnit();
     }
@@ -199,79 +218,268 @@ export class GameScene extends Phaser.Scene {
    * Select a unit and show action menu (but don't activate navigation yet)
    */
   private selectUnitAtCursor(unitData: UnitData): void {
-    this.selectionState = selectUnit(this.selectionState, unitData);
+    this.stateManager.selectUnit(unitData);
 
     // Add highlight effect
     addHighlightEffect(unitData.sprite);
 
     // Emit event to UI scene to show action menu
-    this.events.emit("unit-selected", unitData.unit);
+    this.eventEmitter.emitUnitSelected(unitData.unit);
   }
 
   /**
    * Activate menu navigation and show visual indicators
    */
   private activateMenuNavigation(): void {
-    this.isMenuActive = true;
-    this.events.emit("menu-activate");
+    this.stateManager.activateMenu();
+    this.eventEmitter.emitMenuActivate();
   }
 
   /**
    * Deactivate menu navigation but keep menu visible
    */
   private deactivateMenuNavigation(): void {
-    this.isMenuActive = false;
-    this.events.emit("menu-deactivate");
+    this.stateManager.deactivateMenu();
+    this.eventEmitter.emitMenuDeactivate();
   }
 
   /**
    * Handle menu action selected from UI scene
    */
-  private handleMenuActionSelected(_actionName: string): void {
-    const selectedUnit = getSelectedUnit(this.selectionState);
+  private handleMenuActionSelected(actionName: string): void {
+    const selectedUnit = this.stateManager.getSelectedUnit();
     if (!selectedUnit) return;
 
-    // TODO: Execute action based on _actionName
-    // For now, just deselect the unit after action is selected
     console.log(
-      `Action "${_actionName}" selected for unit ${selectedUnit.unit.id}`
+      `Action "${actionName}" selected for unit ${selectedUnit.unit.id}`
     );
 
-    // After executing action, deselect unit
-    this.deselectCurrentUnit();
+    // Close the menu
+    this.eventEmitter.emitUnitDeselected();
+    this.stateManager.deactivateMenu();
+
+    // Handle action based on name
+    if (actionName === "Move") {
+      this.enterMovementModeForSelectedUnit();
+    } else if (actionName === "Attack") {
+      this.enterAttackModeForSelectedUnit();
+    } else {
+      // Other actions - for now, just deselect
+      this.deselectCurrentUnit();
+    }
   }
 
   /**
    * Deselect current unit and hide menu
    */
   private deselectCurrentUnit(): void {
-    const selectedUnit = getSelectedUnit(this.selectionState);
+    const selectedUnit = this.stateManager.getSelectedUnit();
     if (!selectedUnit) return;
 
     // Remove highlight effect
     removeHighlightEffect(selectedUnit.sprite);
 
     // Emit event to UI scene to hide menu
-    this.events.emit("unit-deselected");
+    this.eventEmitter.emitUnitDeselected();
 
     // Reset menu active state
-    this.isMenuActive = false;
+    this.stateManager.deactivateMenu();
 
     // Update selection state
-    this.selectionState = deselectUnit(this.selectionState);
+    this.stateManager.deselectUnit();
+  }
+
+  /**
+   * Enter movement mode for the currently selected unit
+   */
+  private enterMovementModeForSelectedUnit(): void {
+    const selectedUnit = this.stateManager.getSelectedUnit();
+    if (!selectedUnit) return;
+
+    // Enter movement mode
+    this.stateManager.enterMovementMode(selectedUnit.unit, this.mapBounds, 5); // movement range
+
+    // Highlight all reachable tiles
+    const movementState = this.stateManager.getMovementState();
+    const tileHighlights = this.stateManager.getTileHighlights();
+    movementState.reachableTiles.forEach((tile) => {
+      addMovementHighlight(this, tileHighlights, tile.tileX, tile.tileY);
+    });
+  }
+
+  /**
+   * Exit movement mode and deselect unit
+   */
+  private exitMovementModeAndDeselectUnit(): void {
+    // Clear movement highlights
+    this.stateManager.clearHighlights();
+
+    // Exit movement mode
+    this.stateManager.exitMovementMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Handle confirm during movement mode - move unit to cursor position
+   */
+  private handleMovementConfirm(): void {
+    this.cursor = this.inputHandler.getCursor();
+
+    // Check if cursor is on a reachable tile
+    const movementState = this.stateManager.getMovementState();
+    if (!isTileReachable(movementState, this.cursor)) {
+      return;
+    }
+
+    const selectedUnit = this.stateManager.getSelectedUnit();
+    if (!selectedUnit) return;
+
+    // Generate path to destination
+    const path = generateMovementPath(
+      selectedUnit.unit.position.tileX,
+      selectedUnit.unit.position.tileY,
+      this.cursor.tileX,
+      this.cursor.tileY
+    );
+
+    // Start unit movement animation
+    this.animateUnitMovement(selectedUnit, path);
+  }
+
+  /**
+   * Animate unit movement along a path
+   */
+  private animateUnitMovement(
+    unitData: UnitData,
+    path: Array<{ tileX: number; tileY: number }>
+  ): void {
+    this.stateManager.setUnitMoving(true);
+
+    this.animationController.animateMovement(unitData, path, () => {
+      this.onUnitMovementComplete();
+    });
+  }
+
+  /**
+   * Called when unit movement is complete
+   */
+  private onUnitMovementComplete(): void {
+    this.stateManager.setUnitMoving(false);
+
+    const selectedUnit = this.stateManager.getSelectedUnit();
+    if (selectedUnit) {
+      // Set unit back to idle
+      this.animationController.setUnitIdle(selectedUnit);
+    }
+
+    // Clear movement highlights and exit movement mode
+    this.stateManager.clearHighlights();
+    this.stateManager.exitMovementMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Enter attack mode for the currently selected unit
+   */
+  private enterAttackModeForSelectedUnit(): void {
+    const selectedUnit = this.stateManager.getSelectedUnit();
+    if (!selectedUnit) return;
+
+    // Enter attack mode with range 1 (basic attack)
+    this.stateManager.enterAttackMode(selectedUnit.unit, this.mapBounds, 1); // attack range
+
+    // Highlight all attackable tiles in red
+    const attackState = this.stateManager.getAttackState();
+    const tileHighlights = this.stateManager.getTileHighlights();
+    attackState.attackableTiles.forEach((tile) => {
+      addAttackHighlight(this, tileHighlights, tile.tileX, tile.tileY);
+    });
+  }
+
+  /**
+   * Exit attack mode and deselect unit
+   */
+  private exitAttackModeAndDeselectUnit(): void {
+    // Clear attack highlights
+    this.stateManager.clearHighlights();
+
+    // Exit attack mode
+    this.stateManager.exitAttackMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
+  }
+
+  /**
+   * Handle confirm during attack mode - attack target at cursor position
+   */
+  private handleAttackConfirm(): void {
+    this.cursor = this.inputHandler.getCursor();
+
+    // Check if cursor is on an attackable tile
+    const attackState = this.stateManager.getAttackState();
+    if (!isTileAttackable(attackState, this.cursor)) {
+      return;
+    }
+
+    const selectedUnit = this.stateManager.getSelectedUnit();
+    if (!selectedUnit) return;
+
+    // Check if there is a unit at the cursor position
+    const targetUnit = findUnitAtCursor(
+      this.stateManager.getUnits(),
+      this.cursor
+    );
+    if (!targetUnit) {
+      // No unit at target position - do nothing
+      return;
+    }
+
+    // Update attacker's facing direction to face the target
+    this.animationController.updateUnitFacing(
+      selectedUnit,
+      targetUnit.unit.position.tileX,
+      targetUnit.unit.position.tileY
+    );
+
+    // Calculate damage
+    const damage = calculateDamage(selectedUnit.unit, targetUnit.unit);
+
+    // Apply damage to target
+    const updatedUnit = applyDamage(targetUnit.unit, damage);
+    this.stateManager.updateUnit(targetUnit.unit.id, updatedUnit);
+    targetUnit.unit = updatedUnit;
+
+    console.log(
+      `${selectedUnit.unit.name} attacked ${targetUnit.unit.name} for ${damage} damage. HP: ${targetUnit.unit.stats.hp}/${targetUnit.unit.stats.maxHp}`
+    );
+
+    // Emit event to update UI with damaged unit
+    this.eventEmitter.emitUnitDamaged(targetUnit.unit);
+
+    // Play damage effect on target sprite
+    this.animationController.playDamageEffect(targetUnit.sprite);
+
+    // Clear attack highlights and exit attack mode
+    this.stateManager.clearHighlights();
+    this.stateManager.exitAttackMode();
+
+    // Deselect unit
+    this.deselectCurrentUnit();
   }
 
   shutdown() {
-    // Clean up selection state
-    if (hasSelectedUnit(this.selectionState)) {
-      this.deselectCurrentUnit();
-    }
+    // Clean up state
+    this.stateManager.cleanup();
 
     // Clean up event listeners
-    this.events.off("menu-action-selected");
+    this.eventEmitter.cleanup();
 
     // Clean up InputController
-    this.inputController?.destroy();
-    this.inputController = null;
+    this.inputHandler.destroy();
   }
 }

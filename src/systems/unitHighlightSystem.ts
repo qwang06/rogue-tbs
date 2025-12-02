@@ -21,7 +21,10 @@ export function removeHighlightEffect(sprite: Phaser.GameObjects.Sprite): void {
 /**
  * Toggle highlight effect on a sprite
  */
-export function toggleHighlightEffect(sprite: Phaser.GameObjects.Sprite, highlighted: boolean): void {
+export function toggleHighlightEffect(
+  sprite: Phaser.GameObjects.Sprite,
+  highlighted: boolean
+): void {
   if (highlighted) {
     addHighlightEffect(sprite);
   } else {

@@ -12,5 +12,9 @@ export const config: Phaser.Types.Core.GameConfig = {
   backgroundColor: "#222",
   parent: "game-container",
   scene: [BootScene, PreloadScene, MenuScene, GameScene, UIScene],
-  pixelArt: true, // Prevents smoothing for pixel art
+  render: {
+    pixelArt: false, // Disable global pixel art mode
+    antialias: true, // Enable antialiasing for smoother fonts
+    roundPixels: true, // Round pixel positions to avoid sub-pixel rendering
+  },
 };

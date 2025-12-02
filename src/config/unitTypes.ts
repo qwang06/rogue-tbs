@@ -8,7 +8,7 @@ import { UnitTypeConfig } from "../types/units";
 
 /**
  * Predefined unit type configurations for easy instantiation
- * 
+ *
  * To add a new unit type:
  * 1. Add the sprite assets to public/assets/sprites/
  * 2. Add the atlas keys to ATLAS_KEYS in src/assets/keys.ts

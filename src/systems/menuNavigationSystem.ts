@@ -11,64 +11,72 @@ export interface MenuNavigationState {
 /**
  * Create initial menu navigation state
  */
-export function createMenuNavigationState(maxIndex: number): MenuNavigationState {
+export function createMenuNavigationState(
+  maxIndex: number
+): MenuNavigationState {
   return {
     currentIndex: 0,
     maxIndex: maxIndex - 1, // Convert count to max index (0-based)
-    isActive: false
+    isActive: false,
   };
 }
 
 /**
  * Activate menu navigation
  */
-export function activateMenuNavigation(state: MenuNavigationState): MenuNavigationState {
+export function activateMenuNavigation(
+  state: MenuNavigationState
+): MenuNavigationState {
   return {
     ...state,
     isActive: true,
-    currentIndex: 0 // Reset to first option when activated
+    currentIndex: 0, // Reset to first option when activated
   };
 }
 
 /**
  * Deactivate menu navigation
  */
-export function deactivateMenuNavigation(state: MenuNavigationState): MenuNavigationState {
+export function deactivateMenuNavigation(
+  state: MenuNavigationState
+): MenuNavigationState {
   return {
     ...state,
-    isActive: false
+    isActive: false,
   };
 }
 
 /**
  * Move cursor up in menu (with wrapping)
  */
-export function moveMenuCursorUp(state: MenuNavigationState): MenuNavigationState {
+export function moveMenuCursorUp(
+  state: MenuNavigationState
+): MenuNavigationState {
   if (!state.isActive) return state;
-  
-  const newIndex = state.currentIndex === 0 
-    ? state.maxIndex 
-    : state.currentIndex - 1;
-    
+
+  const newIndex =
+    state.currentIndex === 0 ? state.maxIndex : state.currentIndex - 1;
+
   return {
     ...state,
-    currentIndex: newIndex
+    currentIndex: newIndex,
   };
 }
 
 /**
  * Move cursor down in menu (with wrapping)
  */
-export function moveMenuCursorDown(state: MenuNavigationState): MenuNavigationState {
+export function moveMenuCursorDown(
+  state: MenuNavigationState
+): MenuNavigationState {
   if (!state.isActive) return state;
-  
-  const newIndex = state.currentIndex === state.maxIndex 
-    ? 0 
-    : state.currentIndex + 1;
-    
+
+  const newIndex =
+    state.currentIndex === state.maxIndex ? 0 : state.currentIndex + 1;
+
   return {
     ...state,
-    currentIndex: newIndex
+    currentIndex: newIndex,
   };
 }
 
