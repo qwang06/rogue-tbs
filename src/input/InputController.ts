@@ -310,7 +310,6 @@ export class InputController {
   /**
    * Subscribe to an event
    */
-   
   on(event: string, callback: (...args: unknown[]) => void): this {
     this.emitter.on(event, callback);
     return this;
@@ -319,7 +318,6 @@ export class InputController {
   /**
    * Unsubscribe from an event
    */
-   
   off(event: string, callback: (...args: unknown[]) => void): this {
     this.emitter.off(event, callback);
     return this;
