@@ -6,13 +6,15 @@ These guidelines are for GitHub Copilot Agent when working in this repository.
 ---
 
 ## Project Overview
+
 - **Stack:** TypeScript, Phaser 3, Vite, Vitest, ESLint (flat), Prettier
-- **Game:** 2D, turn-based strategy (in the vein of *Fire Emblem* / *Final Fantasy Tactics*). Roguelike structure inspired by *Vampire Survivors* (but turn-based).
-- **Principles:** Clean Code (small, focused functions), composition over inheritance, testable core logic.
+- **Game:** 2D, turn-based strategy (Fire Emblem style). Roguelike structure.
+- **Architecture:** **Functional Core, Imperative Shell**. Logic is decoupled from Rendering.
 
 ---
 
 ## Repository Tasks (Run Order)
+
 1. `npm install` — ensure it completes successfully.
 2. `npm run typecheck` — no TypeScript errors.
 3. `npm run lint` — autofix where possible; no remaining lint errors.
@@ -20,71 +22,64 @@ These guidelines are for GitHub Copilot Agent when working in this repository.
 5. `npm test` — all tests pass (Vitest).
 6. `npm run build` — Vite production build succeeds.
 
-> **Notes**
-> - Do not rely on fixed duration estimates or kill commands by time. Ensure completion and success instead.
-> - Prefer generous timeouts in automation; never cancel long-running tasks prematurely during setup/build.
-
 ---
 
-## Run/Validate Locally
-- **Dev server:** `npm run dev` (Vite at http://localhost:5173/).
-- **Manual smoke test checklist:**
-  - App loads without console errors.
-  - Pixel art scene renders and displays “HELLO WORLD”.
-  - Arrow keys / basic input are captured (no runtime exceptions).
-  - Page hot-reload works.
+## Code & Architecture Rules (STRICT)
 
----
+### 1. File Layout & Separation
 
-## Code & Architecture Rules
-- **TypeScript only.** No `.js` sources. TS strict mode; no `any`.
-- **File layout (high-level):**
-  - `src/scenes/` — Phaser scenes (Boot → Preload → Menu → Game → UI).
-  - `src/components/` — plain data-only components (no Phaser imports).
-  - `src/systems/` — pure functions operating on components (unit-testable).
-  - `src/entities/` — factory functions for game objects/wrappers.
-  - `src/util/` — helpers (pure where possible).
-- **No Phaser imports** inside `components/`, `systems/`, or unit tests. Keep game logic framework-agnostic.
-- **Inter-scene communication:** use an EventBus or explicit dependency injection; avoid direct cross-scene imports.
-- **State management:** central `GameModel` (serializable) for persistent state; scenes read/update via events or injected services.
-- **Physics:** **Do not enable** Arcade/Matter unless a ticket explicitly asks for it.
-- **Config:** Use `src/config.ts` as the single source for game configuration (type, width/height, backgroundColor, scenes, etc.).
-- **Naming/style:** PascalCase for classes, camelCase for variables/functions; descriptive names; small focused functions; early returns over deep nesting.
-- **Magic strings:** Put asset keys in `src/assets/keys.ts`.
+- `src/scenes/` — **The Shell (View).** Phaser code only. Handles Input & Rendering.
+- `src/components/` — **The Data.** Plain interfaces/types. NO methods. NO Phaser imports.
+- `src/systems/` — **The Logic.** Pure functions `(State, Action) => NewState`. NO Phaser imports.
+- `src/assets/` — Asset management and key definitions.
+
+### 2. The "Sync" Protocol (View <-> Logic)
+
+- **Unidirectional Flow:** Scenes listen to `GameModel` events (via Signal/EventBus). Scenes never "ask" for data in the update loop.
+- **Input Locking:** The `GameModel` must have a `isBusy` or `inputLocked` state.
+  - When an action occurs (e.g., Attack), Logic emits event -> Locks Input.
+  - View receives event -> Plays Animation (tween).
+  - **Crucial:** When Animation completes, View calls `GameModel.unlock()` or emits `AnimationComplete`.
+- **Update Loop:** The Phaser `update()` loop is for **interpolation only**. Never put game rules (e.g., "if HP < 0") inside `update()`.
+
+### 3. Coordinate Systems
+
+- **Grid Space (Logic):** Integers (0,0 to 7,7). Used by Components/Systems.
+- **World Space (Pixels):** Floats (32.5, 100.0). Used by Phaser/Tweens.
+- **Conversion:** Use specific helper functions (e.g., `gridToWorld(x,y)`) to convert.
+  - _Rule:_ Systems never calculate pixels. Scenes never calculate grid logic.
+
+### 4. Asset Safety
+
+- **No Magic Strings:** Never use raw strings for asset keys (e.g., `load.image('player')`).
+- **Registry:** All keys must be defined in `src/assets/keys.ts` as `const` or `enum`.
+- **Usage:** Usage must look like `scene.add.sprite(x, y, AssetKeys.Units.Warrior)`.
+
+### 5. TypeScript Standards
+
+- **Strict Mode:** No `any`. No `@ts-ignore` unless explicitly approved.
+- **Naming:** PascalCase for Classes/Components, camelCase for variables/functions.
+- **State:** Prefer `readonly` properties in Components to enforce immutability where possible.
 
 ---
 
 ## Tooling & Config
-- **Vite config:** prefer `vite.config.ts` (typed, consistent with TS).
-- **Testing:** write unit tests for `systems/` and utilities. Avoid DOM/Phaser coupling in tests.
-- **ESLint/Prettier:** keep both green locally before committing.
+
+- **Vite config:** prefer `vite.config.ts`.
+- **Testing:** Write unit tests for `systems/` only. Mock nothing; test pure logic.
+- **ESLint/Prettier:** Must be green before PR.
 
 ---
 
 ## Pull Requests (required)
-- Reference the issue (e.g., `Closes #123`).
-- Include a concise summary and any architectural notes.
+
 - PR must pass: `typecheck`, `lint`, `format`, `test`, `build`.
-- Include a short **manual validation note** (URL loaded, text visible, input works, no console errors).
-- Keep PRs **small and focused** (single responsibility).
+- Include a manual validation note (e.g., "Unit moves to (3,4) and animation plays").
 
 ---
 
-## Conventional Commits
-Use: `feat:`, `fix:`, `refactor:`, `chore:`, `test:`, `docs:`. Example:  
-`feat: add config.ts and bootstrap Game with modular scene list`
+## Roadmap Signals for Copilot (Prioritized)
 
----
-
-## Known Warnings (OK to Ignore)
-- Vite chunk size >500KB (Phaser bundling).
-- Any ESLint “module type not specified” warning that is already accepted in the repo baseline.
-
----
-
-## Roadmap Signals for Copilot (don’t act unless an issue requests)
-- Tilemaps & grid rendering (Phaser tilemaps or custom grid).
-- Turn manager (phase system: player → enemy → cleanup).
-- Pathfinding (A* on grid, cost maps).
-- Data-driven units (JSON) and composition-based abilities.
-- UI overlays (turn order, action menu, combat forecast).
+1. **Grid System:** Data structure for the map + Helper to convert Grid <-> World.
+2. **Turn State Machine:** Player Phase -> Enemy Phase -> Resolution.
+3. **Command Queue:** A system to queue logic events so the View can play them one by one (solving the "Ghost Hit" problem).
