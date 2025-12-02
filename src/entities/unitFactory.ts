@@ -73,6 +73,11 @@ export function spawnUnitFromData(
     unit.position.tileY
   );
 
+  // Apply tint if specified
+  if (unit.sprites.tint !== undefined) {
+    sprite.setTint(unit.sprites.tint);
+  }
+
   // Create and play appropriate animation for the unit
   createUnitAnimations(scene, unit);
   playUnitAnimation(sprite, unit);

@@ -16,6 +16,100 @@ import { UnitTypeConfig } from "../types/units";
  * 4. The unit will be available via createPredefinedUnit()
  */
 export const UNIT_TYPES = {
+  // Player units - reusing ACOLYTE_01 sprites with tints
+  WARRIOR: {
+    name: "Warrior",
+    unitType: "Warrior",
+    sprites: {
+      baseKey: "warrior",
+      idleKey: ATLAS_KEYS.ACOLYTE_01_IDLE,
+      moveKey: ATLAS_KEYS.ACOLYTE_01_MOVE,
+      portraitKey: ATLAS_KEYS.ACOLYTE_01_PORTRAIT,
+      tint: 0xff6b6b, // Red tint
+    },
+    baseStats: {
+      hp: 20,
+      maxHp: 20,
+      mp: 0,
+      maxMp: 0,
+      attack: 8,
+      defense: 5,
+      magicAttack: 0,
+      magicDefense: 3,
+      speed: 5,
+      luck: 5,
+    },
+  },
+  ARCHER: {
+    name: "Archer",
+    unitType: "Archer",
+    sprites: {
+      baseKey: "archer",
+      idleKey: ATLAS_KEYS.ACOLYTE_01_IDLE,
+      moveKey: ATLAS_KEYS.ACOLYTE_01_MOVE,
+      portraitKey: ATLAS_KEYS.ACOLYTE_01_PORTRAIT,
+      tint: 0x51cf66, // Green tint
+    },
+    baseStats: {
+      hp: 15,
+      maxHp: 15,
+      mp: 0,
+      maxMp: 0,
+      attack: 7,
+      defense: 3,
+      magicAttack: 0,
+      magicDefense: 4,
+      speed: 8,
+      luck: 6,
+    },
+  },
+  MAGE: {
+    name: "Mage",
+    unitType: "Mage",
+    sprites: {
+      baseKey: "mage",
+      idleKey: ATLAS_KEYS.ACOLYTE_01_IDLE,
+      moveKey: ATLAS_KEYS.ACOLYTE_01_MOVE,
+      portraitKey: ATLAS_KEYS.ACOLYTE_01_PORTRAIT,
+      tint: 0x748ffc, // Blue tint
+    },
+    baseStats: {
+      hp: 12,
+      maxHp: 12,
+      mp: 15,
+      maxMp: 15,
+      attack: 3,
+      defense: 2,
+      magicAttack: 10,
+      magicDefense: 8,
+      speed: 6,
+      luck: 7,
+    },
+  },
+  // Enemy units
+  BANDIT: {
+    name: "Bandit",
+    unitType: "Bandit",
+    sprites: {
+      baseKey: "bandit",
+      idleKey: ATLAS_KEYS.ACOLYTE_06_IDLE,
+      moveKey: ATLAS_KEYS.ACOLYTE_06_MOVE,
+      portraitKey: ATLAS_KEYS.ACOLYTE_06_PORTRAIT,
+    },
+    baseStats: {
+      hp: 30,
+      maxHp: 30,
+      mp: 0,
+      maxMp: 0,
+      attack: 10,
+      defense: 4,
+      magicAttack: 0,
+      magicDefense: 2,
+      speed: 7,
+      luck: 4,
+    },
+  },
+  // Original units kept for backward compatibility
   ACOLYTE_01: {
     name: "Acolyte",
     unitType: "Acolyte",

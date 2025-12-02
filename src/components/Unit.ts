@@ -34,6 +34,10 @@ export interface UnitSprites {
    * Key for the portrait image
    */
   portraitKey: string;
+  /**
+   * Optional tint color in hex format (e.g., 0xff0000 for red)
+   */
+  tint?: number;
 }
 
 export interface Unit {

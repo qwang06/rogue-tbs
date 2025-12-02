@@ -17,6 +17,14 @@ describe("Unit Component", () => {
     portraitKey: "test_unit_portrait",
   };
 
+  const mockSpritesWithTint: UnitSprites = {
+    baseKey: "test_unit_tinted",
+    idleKey: "test_unit_idle",
+    moveKey: "test_unit_move",
+    portraitKey: "test_unit_portrait",
+    tint: 0xff0000, // Red tint
+  };
+
   const mockPosition = { tileX: 5, tileY: 3 };
 
   describe("createUnit", () => {
@@ -82,6 +90,30 @@ describe("Unit Component", () => {
       expect(unit.stats.magicDefense).toBe(10);
       expect(unit.stats.speed).toBe(10);
       expect(unit.stats.luck).toBe(5);
+    });
+
+    it("should create a unit with tint", () => {
+      const unit = createUnit(
+        "test_004",
+        "Tinted Unit",
+        "TintedType",
+        mockPosition,
+        mockSpritesWithTint
+      );
+
+      expect(unit.sprites.tint).toBe(0xff0000);
+    });
+
+    it("should create a unit without tint when not specified", () => {
+      const unit = createUnit(
+        "test_005",
+        "Normal Unit",
+        "NormalType",
+        mockPosition,
+        mockSprites
+      );
+
+      expect(unit.sprites.tint).toBeUndefined();
     });
   });
 
