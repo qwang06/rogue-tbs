@@ -115,6 +115,32 @@ describe("Unit Component", () => {
 
       expect(unit.sprites.tint).toBeUndefined();
     });
+
+    it("should create a unit with specified range", () => {
+      const unit = createUnit(
+        "test_006",
+        "Ranged Unit",
+        "Archer",
+        mockPosition,
+        mockSprites,
+        undefined,
+        2
+      );
+
+      expect(unit.range).toBe(2);
+    });
+
+    it("should create a unit with default range 1", () => {
+      const unit = createUnit(
+        "test_007",
+        "Default Unit",
+        "Warrior",
+        mockPosition,
+        mockSprites
+      );
+
+      expect(unit.range).toBe(1);
+    });
   });
 
   describe("getUnitFrameIndex", () => {

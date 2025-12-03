@@ -39,6 +39,7 @@ export const UNIT_TYPES = {
       speed: 5,
       luck: 5,
     },
+    range: 1,
   },
   ARCHER: {
     name: "Archer",
@@ -62,6 +63,7 @@ export const UNIT_TYPES = {
       speed: 8,
       luck: 6,
     },
+    range: 2,
   },
   MAGE: {
     name: "Mage",
@@ -85,6 +87,7 @@ export const UNIT_TYPES = {
       speed: 6,
       luck: 7,
     },
+    range: 2,
   },
   // Enemy units
   BANDIT: {
@@ -108,6 +111,7 @@ export const UNIT_TYPES = {
       speed: 7,
       luck: 4,
     },
+    range: 1,
   },
   // Original units kept for backward compatibility
   ACOLYTE_01: {
@@ -131,6 +135,7 @@ export const UNIT_TYPES = {
       speed: 12,
       luck: 8,
     },
+    range: 1,
   },
   ACOLYTE_06: {
     name: "Battle Acolyte",
@@ -153,6 +158,7 @@ export const UNIT_TYPES = {
       speed: 14,
       luck: 6,
     },
+    range: 1,
   },
 } as const satisfies Record<string, UnitTypeConfig>;
 

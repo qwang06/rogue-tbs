@@ -16,6 +16,8 @@ export interface UnitTypeConfig {
   sprites: UnitSprites;
   /** Base stats for this unit type */
   baseStats: Partial<UnitStats>;
+  /** Attack range in tiles (Manhattan distance) */
+  range: number;
 }
 
 /**

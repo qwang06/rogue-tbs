@@ -77,6 +77,12 @@ export interface Unit {
    */
   animationState: "idle" | "move" | "attack" | "damaged";
   /**
+   * Attack range in tiles (Manhattan distance)
+   * Range 1: orthogonal tiles only (up, down, left, right)
+   * Range 2+: includes all tiles within Manhattan distance
+   */
+  range: number;
+  /**
    * Additional data for future expansion (spells, abilities, equipment, etc.)
    */
   customData?: Record<string, any>;
@@ -91,7 +97,8 @@ export function createUnit(
   unitType: string,
   position: { tileX: number; tileY: number },
   sprites: UnitSprites,
-  baseStats?: Partial<UnitStats>
+  baseStats?: Partial<UnitStats>,
+  range: number = 1
 ): Unit {
   const defaultStats: UnitStats = {
     hp: 100,
@@ -117,6 +124,7 @@ export function createUnit(
     sprites,
     facing: "front",
     animationState: "idle",
+    range,
     customData: {},
   };
 }
