@@ -8,7 +8,7 @@ import {
   isTileAttackable,
   calculateDamage,
   applyDamage,
-} from "../src/systems/attackSystem";
+} from "../src/systems/attack";
 import { createUnit } from "../src/components/Unit";
 import { createCursor } from "../src/components/Cursor";
 

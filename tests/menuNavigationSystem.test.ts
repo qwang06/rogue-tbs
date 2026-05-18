@@ -7,7 +7,7 @@ import {
   moveMenuCursorDown,
   getCurrentMenuIndex,
   isMenuNavigationActive
-} from '../src/systems/menuNavigationSystem';
+} from '../src/systems/menuNavigation';
 
 describe('menuNavigationSystem', () => {
   describe('createMenuNavigationState', () => {

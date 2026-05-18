@@ -7,7 +7,7 @@ import {
   isTileReachable,
   calculateMovementRange,
   generateMovementPath,
-} from "../src/systems/movementSystem";
+} from "../src/systems/movement";
 import { createUnit } from "../src/components/Unit";
 import { createCursor } from "../src/components/Cursor";
 

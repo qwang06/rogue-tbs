@@ -2,34 +2,34 @@ import type { Unit } from "../../components/Unit";
 import type {
   UnitSelectionState,
   UnitData,
-} from "../../systems/unitSelectionSystem";
+} from "../../systems/unitSelection";
 import {
   createUnitSelectionState,
   selectUnit,
   deselectUnit,
   hasSelectedUnit,
   getSelectedUnit,
-} from "../../systems/unitSelectionSystem";
-import type { MovementState } from "../../systems/movementSystem";
+} from "../../systems/unitSelection";
+import type { MovementState } from "../../systems/movement";
 import {
   createMovementState,
   enterMovementMode,
   exitMovementMode,
   isMovementActive,
-} from "../../systems/movementSystem";
-import type { AttackState } from "../../systems/attackSystem";
+} from "../../systems/movement";
+import type { AttackState } from "../../systems/attack";
 import {
   createAttackState,
   enterAttackMode,
   exitAttackMode,
   isAttackActive,
-} from "../../systems/attackSystem";
-import type { MapBounds } from "../../systems/cursorSystem";
-import type { TileHighlightMap } from "../../systems/tileHighlightSystem";
+} from "../../systems/attack";
+import type { MapBounds } from "../../systems/cursor";
+import type { TileHighlightMap } from "../../systems/tileHighlight";
 import {
   createTileHighlightMap,
   clearAllHighlights,
-} from "../../systems/tileHighlightSystem";
+} from "../../systems/tileHighlight";
 
 /**
  * Manages all game state including units, selection, movement, and attack modes.

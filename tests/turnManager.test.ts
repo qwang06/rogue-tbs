@@ -12,7 +12,7 @@ import {
   nextPhase,
   Phase,
   type TurnManagerState,
-} from "../src/systems/turnManager";
+} from "../src/systems/turn";
 
 describe("turnManager", () => {
   // Spy on console.log to verify phase transition logging

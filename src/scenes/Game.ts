@@ -5,37 +5,37 @@ import {
 } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import { createCursorVisual } from "../entities/cursorFactory";
-import type { MapBounds } from "../systems/cursorSystem";
+import type { MapBounds } from "../systems/cursor";
 import {
   findUnitAtCursor,
   type UnitData,
-} from "../systems/unitSelectionSystem";
+} from "../systems/unitSelection";
 import {
   addHighlightEffect,
   removeHighlightEffect,
-} from "../systems/unitHighlightSystem";
+} from "../systems/unitHighlight";
 import {
   addMovementHighlight,
   addAttackHighlight,
-} from "../systems/tileHighlightSystem";
+} from "../systems/tileHighlight";
 import {
   isTileReachable,
   generateMovementPath,
-} from "../systems/movementSystem";
+} from "../systems/movement";
 import {
   isTileAttackable,
   calculateDamage,
   applyDamage,
-} from "../systems/attackSystem";
+} from "../systems/attack";
 import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
 import { MAP_KEYS } from "../assets/keys";
-import { GameStateManager } from "./managers/GameStateManager";
-import { UnitAnimationController } from "./managers/UnitAnimationController";
+import { GameStateManager } from "./managers/StateManager";
+import { UnitAnimationController } from "./managers/AnimationController";
 import {
   GameInputHandler,
   type InputHandlerCallbacks,
-} from "./managers/GameInputHandler";
-import { GameEventEmitter } from "./managers/GameEventEmitter";
+} from "./managers/InputHandler";
+import { GameEventEmitter } from "./managers/EventEmitter";
 
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile

@@ -6,7 +6,7 @@ import {
   moveCursorWithBounds,
   type MapBounds,
   type DirectionType
-} from '../src/systems/cursorSystem';
+} from '../src/systems/cursor';
 import { createCursor } from '../src/components/Cursor';
 
 describe('Cursor System', () => {

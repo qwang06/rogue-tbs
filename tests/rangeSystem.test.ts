@@ -3,7 +3,7 @@ import {
   getManhattanDistance,
   getTilesInRange,
   isInRange,
-} from "../src/systems/rangeSystem";
+} from "../src/systems/range";
 
 describe("Range System", () => {
   describe("getManhattanDistance", () => {

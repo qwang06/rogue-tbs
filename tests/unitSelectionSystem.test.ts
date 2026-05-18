@@ -7,7 +7,7 @@ import {
   deselectUnit,
   getSelectedUnit,
   type UnitData
-} from '../src/systems/unitSelectionSystem';
+} from '../src/systems/unitSelection';
 import { createCursor } from '../src/components/Cursor';
 import { createUnit } from '../src/components/Unit';
 

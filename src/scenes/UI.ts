@@ -5,7 +5,7 @@ import {
   updateMenuSelection,
   getActionAtIndex,
   type ActionMenuResult,
-} from "../systems/actionMenuSystem";
+} from "../systems/actionMenu";
 import {
   createMenuNavigationState,
   activateMenuNavigation,
@@ -15,7 +15,7 @@ import {
   getCurrentMenuIndex,
   isMenuNavigationActive,
   type MenuNavigationState,
-} from "../systems/menuNavigationSystem";
+} from "../systems/menuNavigation";
 import {
   createUnitInfoPanel,
   updateUnitInfoPanel,
@@ -23,7 +23,7 @@ import {
   hideUnitInfoPanel,
   destroyUnitInfoPanel,
   type UnitInfoPanelResult,
-} from "../systems/unitInfoPanelSystem";
+} from "../systems/unitInfoPanel";
 import { Unit } from "../components/Unit";
 
 export class UIScene extends Phaser.Scene {

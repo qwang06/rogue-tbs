@@ -6,7 +6,7 @@ import {
   moveCursorWithBounds,
   type MapBounds,
   type DirectionType,
-} from "../../systems/cursorSystem";
+} from "../../systems/cursor";
 import { updateCursorVisual } from "../../entities/cursorFactory";
 
 /**

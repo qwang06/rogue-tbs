@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { UnitData } from "../../systems/unitSelectionSystem";
+import type { UnitData } from "../../systems/unitSelection";
 import {
   moveUnit,
   setUnitFacing,

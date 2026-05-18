@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import { Unit } from "../components/Unit";
 import { ATLAS_KEYS, FONT_KEYS, RPG_UI_FRAMES } from "../assets/keys";
-import { extractUnitInfoData } from "./unitInfoSystem";
+import { extractUnitInfoData } from "./unitInfo";
 
 /**
  * Unit info panel system - handles rendering of unit info panel
