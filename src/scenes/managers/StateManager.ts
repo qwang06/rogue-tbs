@@ -1,8 +1,5 @@
 import type { Unit } from "../../components/Unit";
-import type {
-  UnitSelectionState,
-  UnitData,
-} from "../../systems/unitSelection";
+import type { UnitSelectionState, UnitData } from "../../systems/unitSelection";
 import {
   createUnitSelectionState,
   selectUnit,

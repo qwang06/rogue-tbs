@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { getTileCenter, TILE_SIZE } from "../util/tile";
+import { TILE_SIZE } from "../util/tile";
 import { Unit, createUnit, getUnitFrameIndex } from "../components/Unit";
 import { createDirectionAnimationFrames } from "../util/spritesheet";
 import { UNIT_TYPES, UnitTypeKey } from "../config/unitTypes";
@@ -11,27 +11,24 @@ import {
 import { TilePosition, SpawnUnitResult } from "../types/units";
 
 /**
- * Spawns a unit sprite at the specified tile coordinates with proper alignment and scaling.
+ * Spawns a unit sprite at the specified world coordinates with proper alignment and scaling.
  *
  * @param scene - The Phaser scene to add the sprite to
  * @param key - The texture key for the sprite
  * @param frame - The frame key or numeric index within the texture
- * @param tileX - The tile X coordinate
- * @param tileY - The tile Y coordinate
- * @returns The created sprite positioned and scaled for the tile grid
+ * @param worldX - The world X coordinate
+ * @param worldY - The world Y coordinate
+ * @returns The created sprite positioned and scaled for the map
  */
 export function spawnUnit(
   scene: Phaser.Scene,
   key: string,
   frame: string | number,
-  tileX: number,
-  tileY: number
+  worldX: number,
+  worldY: number
 ): Phaser.GameObjects.Sprite {
-  // Get the world position for the tile center
-  const position = getTileCenter(tileX, tileY);
-
-  // Create the sprite at the tile center
-  const sprite = scene.add.sprite(position.x, position.y, key, frame);
+  // Create the sprite at the provided world position
+  const sprite = scene.add.sprite(worldX, worldY, key, frame);
 
   // Set origin so feet are aligned with bottom-center of tile
   sprite.setOrigin(0.5, 0.5);
@@ -53,11 +50,15 @@ export function spawnUnit(
  * Creates a Unit instance and spawns its sprite in the scene
  * @param scene The Phaser scene to add the sprite to
  * @param unit The Unit instance to spawn
+ * @param worldX World X coordinate for the sprite spawn position
+ * @param worldY World Y coordinate for the sprite spawn position
  * @returns Object containing the Unit and its Phaser sprite
  */
 export function spawnUnitFromData(
   scene: Phaser.Scene,
-  unit: Unit
+  unit: Unit,
+  worldX: number,
+  worldY: number
 ): SpawnUnitResult {
   const frameIndex = getUnitFrameIndex(unit);
   const textureKey =
@@ -65,13 +66,7 @@ export function spawnUnitFromData(
       ? unit.sprites.idleKey
       : unit.sprites.moveKey;
 
-  const sprite = spawnUnit(
-    scene,
-    textureKey,
-    frameIndex,
-    unit.position.tileX,
-    unit.position.tileY
-  );
+  const sprite = spawnUnit(scene, textureKey, frameIndex, worldX, worldY);
 
   // Apply tint if specified
   if (unit.sprites.tint !== undefined) {

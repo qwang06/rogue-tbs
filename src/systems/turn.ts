@@ -103,7 +103,7 @@ export function endEnemyPhase(state: TurnManagerState): TurnManagerState {
  */
 export function nextPhase(state: TurnManagerState): TurnManagerState {
   const currentPhase = state.currentPhase;
-  
+
   if (currentPhase === Phase.Player) {
     // End player phase and start enemy phase
     const afterEndPlayer = endPlayerPhase(state);

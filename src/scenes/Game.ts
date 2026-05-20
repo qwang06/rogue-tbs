@@ -5,11 +5,9 @@ import {
 } from "../entities/unitFactory";
 import { createCursor } from "../components/Cursor";
 import { createCursorVisual } from "../entities/cursorFactory";
+import { TILE_SIZE } from "../util/tile";
 import type { MapBounds } from "../systems/cursor";
-import {
-  findUnitAtCursor,
-  type UnitData,
-} from "../systems/unitSelection";
+import { findUnitAtCursor, type UnitData } from "../systems/unitSelection";
 import {
   addHighlightEffect,
   removeHighlightEffect,
@@ -18,16 +16,22 @@ import {
   addMovementHighlight,
   addAttackHighlight,
 } from "../systems/tileHighlight";
-import {
-  isTileReachable,
-  generateMovementPath,
-} from "../systems/movement";
+import { isTileReachable, generateMovementPath } from "../systems/movement";
 import {
   isTileAttackable,
   calculateDamage,
   applyDamage,
 } from "../systems/attack";
-import { loadGeneratedMap, getMapCameraBounds } from "../util/mapLoader";
+import {
+  getGeneratedMapData,
+  getMapBounds,
+  type GeneratedMapData,
+} from "../util/mapLoader";
+import {
+  mapCameraBoundsFromData,
+  renderGeneratedMap,
+} from "./helpers/mapRendering";
+import { tileToWorldCenter } from "./helpers/coordinates";
 import { MAP_KEYS } from "../assets/keys";
 import { GameStateManager } from "./managers/StateManager";
 import { UnitAnimationController } from "./managers/AnimationController";
@@ -40,6 +44,7 @@ import { GameEventEmitter } from "./managers/EventEmitter";
 export class GameScene extends Phaser.Scene {
   private cursor = createCursor(0, 0); // Start at top-left tile
   private cursorVisual: Phaser.GameObjects.Sprite | null = null;
+  private mapTileSize = TILE_SIZE;
   private mapBounds: MapBounds = {
     minX: 0,
     minY: 0,
@@ -63,9 +68,12 @@ export class GameScene extends Phaser.Scene {
     this.animationController = new UnitAnimationController(this);
     this.eventEmitter = new GameEventEmitter(this.events);
 
-    // Load the AI-generated map
-    this.mapBounds = loadGeneratedMap(this, MAP_KEYS.GENERATED_MAP_1);
-    this.setupCamera();
+    // Load and render map
+    const mapData = getGeneratedMapData(this, MAP_KEYS.GENERATED_MAP_1);
+    this.mapBounds = getMapBounds(mapData);
+    this.mapTileSize = mapData.tileSize;
+    renderGeneratedMap(this, mapData);
+    this.setupCamera(mapData);
 
     // Unit positions
     const ACOLYTE_01_POS = { x: 2, y: 2 };
@@ -82,8 +90,29 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Spawn the units and store their data
-    const unit1Data = spawnUnitFromData(this, acolyte01);
-    const unit2Data = spawnUnitFromData(this, acolyte06);
+    const unit1World = tileToWorldCenter(
+      acolyte01.position.tileX,
+      acolyte01.position.tileY,
+      this.mapTileSize
+    );
+    const unit2World = tileToWorldCenter(
+      acolyte06.position.tileX,
+      acolyte06.position.tileY,
+      this.mapTileSize
+    );
+
+    const unit1Data = spawnUnitFromData(
+      this,
+      acolyte01,
+      unit1World.x,
+      unit1World.y
+    );
+    const unit2Data = spawnUnitFromData(
+      this,
+      acolyte06,
+      unit2World.x,
+      unit2World.y
+    );
 
     this.stateManager.addUnit(unit1Data);
     this.stateManager.addUnit(unit2Data);
@@ -102,10 +131,8 @@ export class GameScene extends Phaser.Scene {
     this.emitUnitHoverEvent();
   }
 
-  private setupCamera() {
-    // Get the map data to calculate camera bounds
-    const mapData = this.cache.json.get(MAP_KEYS.GENERATED_MAP_1);
-    const cameraBounds = getMapCameraBounds(mapData);
+  private setupCamera(mapData: GeneratedMapData) {
+    const cameraBounds = mapCameraBoundsFromData(mapData);
 
     this.cameras.main.roundPixels = true;
     this.cameras.main.setBounds(0, 0, cameraBounds.width, cameraBounds.height);
@@ -114,7 +141,12 @@ export class GameScene extends Phaser.Scene {
 
   private setupCursor() {
     // Create cursor visual - render above tiles but below UI
-    this.cursorVisual = createCursorVisual(this, this.cursor);
+    const world = tileToWorldCenter(
+      this.cursor.tileX,
+      this.cursor.tileY,
+      this.mapTileSize
+    );
+    this.cursorVisual = createCursorVisual(this, world.x, world.y);
     this.cursorVisual.setDepth(10); // Above tiles, below UI
   }
 
@@ -122,7 +154,11 @@ export class GameScene extends Phaser.Scene {
     const callbacks: InputHandlerCallbacks = {
       onMenuNavigateUp: () => this.eventEmitter.emitMenuNavigateUp(),
       onMenuNavigateDown: () => this.eventEmitter.emitMenuNavigateDown(),
-      onCursorMove: () => this.emitUnitHoverEvent(),
+      onCursorMove: (cursor) => {
+        this.cursor = cursor;
+        this.syncCursorVisual();
+        this.emitUnitHoverEvent();
+      },
       onConfirm: () => this.handleConfirm(),
       onCancel: () => this.handleCancel(),
     };
@@ -130,7 +166,6 @@ export class GameScene extends Phaser.Scene {
     this.inputHandler = new GameInputHandler(
       this,
       this.cursor,
-      this.cursorVisual!,
       this.mapBounds,
       () => this.stateManager.isMenuCurrentlyActive(),
       () => this.stateManager.isUnitCurrentlyMoving(),
@@ -138,11 +173,23 @@ export class GameScene extends Phaser.Scene {
     );
   }
 
+  private syncCursorVisual(): void {
+    if (!this.cursorVisual) {
+      return;
+    }
+
+    const world = tileToWorldCenter(
+      this.cursor.tileX,
+      this.cursor.tileY,
+      this.mapTileSize
+    );
+    this.cursorVisual.setPosition(world.x, world.y);
+  }
+
   /**
    * Emit hover event for unit at current cursor position
    */
   private emitUnitHoverEvent(): void {
-    this.cursor = this.inputHandler.getCursor();
     const unitAtCursor = findUnitAtCursor(
       this.stateManager.getUnits(),
       this.cursor
@@ -303,7 +350,16 @@ export class GameScene extends Phaser.Scene {
     const movementState = this.stateManager.getMovementState();
     const tileHighlights = this.stateManager.getTileHighlights();
     movementState.reachableTiles.forEach((tile) => {
-      addMovementHighlight(this, tileHighlights, tile.tileX, tile.tileY);
+      const world = tileToWorldCenter(tile.tileX, tile.tileY, this.mapTileSize);
+      addMovementHighlight(
+        this,
+        tileHighlights,
+        tile.tileX,
+        tile.tileY,
+        world.x,
+        world.y,
+        this.mapTileSize
+      );
     });
   }
 
@@ -396,7 +452,16 @@ export class GameScene extends Phaser.Scene {
     const attackState = this.stateManager.getAttackState();
     const tileHighlights = this.stateManager.getTileHighlights();
     attackState.attackableTiles.forEach((tile) => {
-      addAttackHighlight(this, tileHighlights, tile.tileX, tile.tileY);
+      const world = tileToWorldCenter(tile.tileX, tile.tileY, this.mapTileSize);
+      addAttackHighlight(
+        this,
+        tileHighlights,
+        tile.tileX,
+        tile.tileY,
+        world.x,
+        world.y,
+        this.mapTileSize
+      );
     });
   }
 

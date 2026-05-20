@@ -31,14 +31,14 @@ const createMockScene = () => ({
 
 describe("Unit Factory", () => {
   describe("spawnUnit (original function)", () => {
-    it("should create sprite at correct tile position", () => {
+    it("should create sprite at provided world position", () => {
       const mockScene = createMockScene() as any;
-      const sprite = spawnUnit(mockScene, "test-key", "test-frame", 2, 3);
+      spawnUnit(mockScene, "test-key", "test-frame", 40, 56);
 
-      // Should call add.sprite with tile center coordinates
+      // Should call add.sprite with provided world coordinates
       expect(mockScene.add.sprite).toHaveBeenCalledWith(
-        2 * TILE_SIZE + TILE_SIZE / 2, // x = 40
-        3 * TILE_SIZE + TILE_SIZE / 2, // y = 56
+        40,
+        56,
         "test-key",
         "test-frame"
       );
@@ -151,12 +151,12 @@ describe("Unit Factory", () => {
         tileY: 4,
       });
 
-      const result = spawnUnitFromData(mockScene, unit);
+      const result = spawnUnitFromData(mockScene, unit, 112, 144);
 
       expect(result.unit).toBe(unit);
       expect(mockScene.add.sprite).toHaveBeenCalledWith(
-        3 * TILE_SIZE + TILE_SIZE / 2, // x coordinate
-        4 * TILE_SIZE + TILE_SIZE / 2, // y coordinate
+        112,
+        144,
         unit.sprites.idleKey, // Should use idle key for idle animation state
         0 // Front facing, frame 0 (numeric index for 4x4 grid)
       );
@@ -170,7 +170,7 @@ describe("Unit Factory", () => {
         tileY: 2,
       });
 
-      const result = spawnUnitFromData(mockScene, unit);
+      const result = spawnUnitFromData(mockScene, unit, 48, 80);
 
       // Should create animations for all directions and states
       expect(mockScene.anims.create).toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe("Unit Factory", () => {
       // Change unit to move state
       unit = { ...unit, animationState: "move" as const };
 
-      const result = spawnUnitFromData(mockScene, unit);
+      const result = spawnUnitFromData(mockScene, unit, 48, 80);
 
       expect(mockScene.add.sprite).toHaveBeenCalledWith(
         expect.any(Number),
@@ -210,7 +210,7 @@ describe("Unit Factory", () => {
       // Change unit facing
       unit = { ...unit, facing: "left" as const };
 
-      spawnUnitFromData(mockScene, unit);
+      spawnUnitFromData(mockScene, unit, 16, 16);
 
       expect(mockScene.add.sprite).toHaveBeenCalledWith(
         expect.any(Number),

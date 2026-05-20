@@ -7,7 +7,6 @@ import {
   type MapBounds,
   type DirectionType,
 } from "../../systems/cursor";
-import { updateCursorVisual } from "../../entities/cursorFactory";
 
 /**
  * Callback interface for input handling
@@ -27,7 +26,6 @@ export interface InputHandlerCallbacks {
 export class GameInputHandler {
   private inputController: InputController;
   private cursor: Cursor;
-  private cursorVisual: Phaser.GameObjects.Sprite;
   private mapBounds: MapBounds;
   private callbacks: InputHandlerCallbacks;
   private isMenuActive: () => boolean;
@@ -36,14 +34,12 @@ export class GameInputHandler {
   constructor(
     scene: Phaser.Scene,
     cursor: Cursor,
-    cursorVisual: Phaser.GameObjects.Sprite,
     mapBounds: MapBounds,
     isMenuActive: () => boolean,
     isUnitMoving: () => boolean,
     callbacks: InputHandlerCallbacks
   ) {
     this.cursor = cursor;
-    this.cursorVisual = cursorVisual;
     this.mapBounds = mapBounds;
     this.callbacks = callbacks;
     this.isMenuActive = isMenuActive;
@@ -100,7 +96,6 @@ export class GameInputHandler {
     if (this.isUnitMoving()) return; // Don't move cursor while unit is moving
 
     this.cursor = moveCursorWithBounds(this.cursor, direction, this.mapBounds);
-    updateCursorVisual(this.cursorVisual, this.cursor);
 
     // Notify callback about cursor move
     this.callbacks.onCursorMove(this.cursor);

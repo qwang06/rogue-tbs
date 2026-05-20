@@ -2,10 +2,12 @@
  * Range system - calculates tiles within attack range using Manhattan distance
  */
 
-export interface TilePosition {
-  tileX: number;
-  tileY: number;
-}
+import {
+  manhattanDistance,
+  tilesInManhattanRange,
+  type GridBounds,
+  type TilePosition,
+} from "../util/gridMath";
 
 /**
  * Calculate Manhattan distance between two tiles
@@ -15,7 +17,7 @@ export function getManhattanDistance(
   from: TilePosition,
   to: TilePosition
 ): number {
-  return Math.abs(to.tileX - from.tileX) + Math.abs(to.tileY - from.tileY);
+  return manhattanDistance(from, to);
 }
 
 /**
@@ -30,34 +32,9 @@ export function getManhattanDistance(
 export function getTilesInRange(
   source: TilePosition,
   range: number,
-  mapBounds?: { minX: number; minY: number; maxX: number; maxY: number }
+  mapBounds?: GridBounds
 ): TilePosition[] {
-  const tiles: TilePosition[] = [];
-
-  // Iterate through all tiles in the bounding box
-  for (let dx = -range; dx <= range; dx++) {
-    for (let dy = -range; dy <= range; dy++) {
-      const tileX = source.tileX + dx;
-      const tileY = source.tileY + dy;
-      const distance = Math.abs(dx) + Math.abs(dy);
-
-      // Check if tile is within range (exclude source tile)
-      if (distance > 0 && distance <= range) {
-        // Check if tile is within map bounds
-        if (
-          !mapBounds ||
-          (tileX >= mapBounds.minX &&
-            tileX <= mapBounds.maxX &&
-            tileY >= mapBounds.minY &&
-            tileY <= mapBounds.maxY)
-        ) {
-          tiles.push({ tileX, tileY });
-        }
-      }
-    }
-  }
-
-  return tiles;
+  return tilesInManhattanRange(source, range, mapBounds);
 }
 
 /**

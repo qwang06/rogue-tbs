@@ -1,6 +1,4 @@
 import Phaser from "phaser";
-import { getTileCenter } from "../util/tile";
-import type { Cursor } from "../components/Cursor";
 import { ATLAS_KEYS, ANIMATION_KEYS, RPG_OW_FRAMES } from "../assets/keys";
 
 /**
@@ -11,7 +9,8 @@ import { ATLAS_KEYS, ANIMATION_KEYS, RPG_OW_FRAMES } from "../assets/keys";
  */
 export function createCursorVisual(
   scene: Phaser.Scene,
-  cursor: Cursor
+  worldX: number,
+  worldY: number
 ): Phaser.GameObjects.Sprite {
   // Create the cursor animation if it doesn't exist
   if (!scene.anims.exists(ANIMATION_KEYS.CURSOR_BLINK)) {
@@ -26,10 +25,9 @@ export function createCursorVisual(
     });
   }
 
-  const position = getTileCenter(cursor.tileX, cursor.tileY);
   const sprite = scene.add.sprite(
-    position.x,
-    position.y,
+    worldX,
+    worldY,
     ATLAS_KEYS.RPG_OW,
     RPG_OW_FRAMES.CURSOR_0
   );
@@ -47,10 +45,10 @@ export function createCursorVisual(
  */
 export function updateCursorVisual(
   sprite: Phaser.GameObjects.Sprite,
-  cursor: Cursor
+  worldX: number,
+  worldY: number
 ): void {
-  const position = getTileCenter(cursor.tileX, cursor.tileY);
-  sprite.setPosition(position.x, position.y);
+  sprite.setPosition(worldX, worldY);
 }
 
 /**
@@ -60,7 +58,8 @@ export function updateCursorVisual(
  */
 export function setCursorPosition(
   sprite: Phaser.GameObjects.Sprite,
-  cursor: Cursor
+  worldX: number,
+  worldY: number
 ): void {
-  updateCursorVisual(sprite, cursor);
+  updateCursorVisual(sprite, worldX, worldY);
 }

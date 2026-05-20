@@ -4,6 +4,11 @@
 
 import { Unit } from "../components/Unit";
 import { Cursor } from "../components/Cursor";
+import {
+  calculateReachableTiles,
+  generateOrthogonalPath,
+} from "../util/pathing";
+import type { GridBounds } from "../util/gridMath";
 
 export interface MovementState {
   isActive: boolean;
@@ -35,7 +40,7 @@ export function isMovementActive(state: MovementState): boolean {
 export function enterMovementMode(
   state: MovementState,
   unit: Unit,
-  mapBounds: { minX: number; minY: number; maxX: number; maxY: number },
+  mapBounds: GridBounds,
   movementRange: number = 5
 ): MovementState {
   const reachableTiles = calculateMovementRange(
@@ -70,64 +75,9 @@ export function calculateMovementRange(
   startX: number,
   startY: number,
   range: number,
-  mapBounds: { minX: number; minY: number; maxX: number; maxY: number }
+  mapBounds: GridBounds
 ): Array<{ tileX: number; tileY: number }> {
-  const reachable: Array<{ tileX: number; tileY: number }> = [];
-  const visited = new Set<string>();
-
-  // BFS to find all tiles within range
-  const queue: Array<{ x: number; y: number; dist: number }> = [
-    { x: startX, y: startY, dist: 0 },
-  ];
-  visited.add(`${startX},${startY}`);
-
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-
-    // Add to reachable list (excluding starting position)
-    if (current.dist > 0) {
-      reachable.push({ tileX: current.x, tileY: current.y });
-    }
-
-    // Don't expand if we've reached max range
-    if (current.dist >= range) {
-      continue;
-    }
-
-    // Check all 4 orthogonal directions
-    const directions = [
-      { dx: 0, dy: -1 }, // up
-      { dx: 0, dy: 1 }, // down
-      { dx: -1, dy: 0 }, // left
-      { dx: 1, dy: 0 }, // right
-    ];
-
-    for (const dir of directions) {
-      const newX = current.x + dir.dx;
-      const newY = current.y + dir.dy;
-      const key = `${newX},${newY}`;
-
-      // Check bounds
-      if (
-        newX < mapBounds.minX ||
-        newX > mapBounds.maxX ||
-        newY < mapBounds.minY ||
-        newY > mapBounds.maxY
-      ) {
-        continue;
-      }
-
-      // Check if already visited
-      if (visited.has(key)) {
-        continue;
-      }
-
-      visited.add(key);
-      queue.push({ x: newX, y: newY, dist: current.dist + 1 });
-    }
-  }
-
-  return reachable;
+  return calculateReachableTiles(startX, startY, range, mapBounds);
 }
 
 /**
@@ -150,30 +100,5 @@ export function generateMovementPath(
   destX: number,
   destY: number
 ): Array<{ tileX: number; tileY: number }> {
-  const path: Array<{ tileX: number; tileY: number }> = [];
-
-  let currentX = startX;
-  let currentY = startY;
-
-  // Move horizontally first
-  while (currentX !== destX) {
-    if (currentX < destX) {
-      currentX++;
-    } else {
-      currentX--;
-    }
-    path.push({ tileX: currentX, tileY: currentY });
-  }
-
-  // Then move vertically
-  while (currentY !== destY) {
-    if (currentY < destY) {
-      currentY++;
-    } else {
-      currentY--;
-    }
-    path.push({ tileX: currentX, tileY: currentY });
-  }
-
-  return path;
+  return generateOrthogonalPath(startX, startY, destX, destY);
 }

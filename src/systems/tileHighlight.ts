@@ -3,7 +3,6 @@
  */
 
 import Phaser from "phaser";
-import { getTileCenter, TILE_SIZE } from "../util/tile";
 
 export const MOVEMENT_HIGHLIGHT_TINT = 0x6666ff; // Blue highlight for movement
 export const MOVEMENT_HIGHLIGHT_ALPHA = 0.4;
@@ -40,7 +39,10 @@ export function addMovementHighlight(
   scene: Phaser.Scene,
   highlightMap: TileHighlightMap,
   tileX: number,
-  tileY: number
+  tileY: number,
+  worldX: number,
+  worldY: number,
+  tileSize: number
 ): void {
   const key = getTileKey(tileX, tileY);
 
@@ -49,13 +51,11 @@ export function addMovementHighlight(
     return;
   }
 
-  const { x, y } = getTileCenter(tileX, tileY);
-
   const highlight = scene.add.rectangle(
-    x,
-    y,
-    TILE_SIZE,
-    TILE_SIZE,
+    worldX,
+    worldY,
+    tileSize,
+    tileSize,
     MOVEMENT_HIGHLIGHT_TINT,
     MOVEMENT_HIGHLIGHT_ALPHA
   );
@@ -110,7 +110,10 @@ export function addAttackHighlight(
   scene: Phaser.Scene,
   highlightMap: TileHighlightMap,
   tileX: number,
-  tileY: number
+  tileY: number,
+  worldX: number,
+  worldY: number,
+  tileSize: number
 ): void {
   const key = getTileKey(tileX, tileY);
 
@@ -119,13 +122,11 @@ export function addAttackHighlight(
     return;
   }
 
-  const { x, y } = getTileCenter(tileX, tileY);
-
   const highlight = scene.add.rectangle(
-    x,
-    y,
-    TILE_SIZE,
-    TILE_SIZE,
+    worldX,
+    worldY,
+    tileSize,
+    tileSize,
     ATTACK_HIGHLIGHT_TINT,
     ATTACK_HIGHLIGHT_ALPHA
   );

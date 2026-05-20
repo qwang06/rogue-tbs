@@ -25,6 +25,7 @@ import {
   type UnitInfoPanelResult,
 } from "../systems/unitInfoPanel";
 import { Unit } from "../components/Unit";
+import { tileToWorldCenter } from "./helpers/coordinates";
 
 export class UIScene extends Phaser.Scene {
   private actionMenu: ActionMenuResult | null = null;
@@ -93,7 +94,8 @@ export class UIScene extends Phaser.Scene {
       destroyActionMenu(this.actionMenu.container);
     }
 
-    this.actionMenu = createActionMenu(this, unit);
+    const world = tileToWorldCenter(unit.position.tileX, unit.position.tileY);
+    this.actionMenu = createActionMenu(this, world.x, world.y);
   }
 
   /**

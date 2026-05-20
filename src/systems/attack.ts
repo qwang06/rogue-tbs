@@ -5,6 +5,8 @@
 
 import { Unit } from "../components/Unit";
 import { Cursor } from "../components/Cursor";
+import { projectOrthogonalRange } from "../util/pathing";
+import type { GridBounds } from "../util/gridMath";
 
 export interface AttackState {
   isActive: boolean;
@@ -43,39 +45,9 @@ export function calculateAttackRange(
   startX: number,
   startY: number,
   range: number = 1,
-  mapBounds: { minX: number; minY: number; maxX: number; maxY: number }
+  mapBounds: GridBounds
 ): Array<{ tileX: number; tileY: number }> {
-  const attackable: Array<{ tileX: number; tileY: number }> = [];
-
-  // For basic attack, only orthogonal directions
-  const directions = [
-    { dx: 0, dy: -1 }, // up
-    { dx: 0, dy: 1 }, // down
-    { dx: -1, dy: 0 }, // left
-    { dx: 1, dy: 0 }, // right
-  ];
-
-  // Check each direction up to the attack range
-  for (const dir of directions) {
-    for (let dist = 1; dist <= range; dist++) {
-      const targetX = startX + dir.dx * dist;
-      const targetY = startY + dir.dy * dist;
-
-      // Check bounds
-      if (
-        targetX < mapBounds.minX ||
-        targetX > mapBounds.maxX ||
-        targetY < mapBounds.minY ||
-        targetY > mapBounds.maxY
-      ) {
-        break; // Stop checking this direction if out of bounds
-      }
-
-      attackable.push({ tileX: targetX, tileY: targetY });
-    }
-  }
-
-  return attackable;
+  return projectOrthogonalRange(startX, startY, range, mapBounds);
 }
 
 /**
@@ -89,7 +61,7 @@ export function calculateAttackRange(
 export function enterAttackMode(
   state: AttackState,
   unit: Unit,
-  mapBounds: { minX: number; minY: number; maxX: number; maxY: number },
+  mapBounds: GridBounds,
   range: number = 1
 ): AttackState {
   const attackableTiles = calculateAttackRange(

@@ -6,7 +6,7 @@ import {
   setUnitAnimationState,
 } from "../../components/Unit";
 import { playUnitAnimation } from "../../entities/unitFactory";
-import { getTileCenter } from "../../util/tile";
+import { tileToWorldCenter } from "../helpers/coordinates";
 
 /**
  * Handles unit animations including movement along paths and damage effects.
@@ -71,7 +71,7 @@ export class UnitAnimationController {
     playUnitAnimation(unitData.sprite, unitData.unit);
 
     // Animate sprite to new position
-    const { x, y } = getTileCenter(nextTile.tileX, nextTile.tileY);
+    const { x, y } = tileToWorldCenter(nextTile.tileX, nextTile.tileY);
     this.scene.tweens.add({
       targets: unitData.sprite,
       x,

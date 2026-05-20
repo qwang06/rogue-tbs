@@ -1,6 +1,4 @@
 import { ATLAS_KEYS, RPG_UI_FRAMES } from "../assets/keys";
-import { TILE_SIZE } from "../util/tile";
-import { Unit } from "../components/Unit";
 
 /**
  * Action menu system - handles action menu UI creation and management with keyboard navigation
@@ -36,20 +34,12 @@ export interface ActionMenuResult {
  */
 export function createActionMenu(
   scene: Phaser.Scene,
-  unit: Unit,
+  anchorX: number,
+  anchorY: number,
   config: ActionMenuConfig = DEFAULT_ACTION_MENU_CONFIG
 ): ActionMenuResult {
-  // Calculate menu position (to the right of the unit)
-  const unitPixelPos = {
-    x: unit.position.tileX * TILE_SIZE + TILE_SIZE / 2,
-    y: unit.position.tileY * TILE_SIZE + TILE_SIZE / 2,
-  };
-
   // Create menu container
-  const actionMenu = scene.add.container(
-    unitPixelPos.x + config.offsetX,
-    unitPixelPos.y
-  );
+  const actionMenu = scene.add.container(anchorX + config.offsetX, anchorY);
   actionMenu.setDepth(100); // Above everything else
 
   // Create nineslice background using rpg-ui patch-1 slice
